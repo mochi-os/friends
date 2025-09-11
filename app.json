@@ -1,0 +1,37 @@
+{
+	"name": "friends",
+	"version": "1.0",
+
+	"engine": "starlark",
+	"protocol": 1,
+
+	"database": {"file": "chat.db", "create": "database_create"},
+
+	"icons": [
+		{"path": "friends", "name": "Friends", "icon": "friends.png"}
+	],
+
+	"paths": {
+		"friends": {
+			"actions": {
+				"": {"function": "action_list"},
+				"accept": {"function": "action_accept"},
+				"create": {"function": "action_create"},
+				"delete": {"function": "action_delete"},
+				"ignore": {"function": "action_ignore"},
+				"new": {"function": "action_new"},
+				"search": {"function": "action_search"}
+			}
+		}
+	},
+
+	"services": {
+		"friends": {
+			"events": {
+				"accept": {"function": "event_accept"},
+				"cancel": {"function": "event_cancel"},
+				"invite": {"function": "event_invite"}
+			}
+		}
+	}
+}
