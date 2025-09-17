@@ -2,10 +2,9 @@
 	"name": "friends",
 	"version": "1.0",
 
-	"engine": "starlark",
-	"protocol": 1,
-
-	"database": {"file": "chat.db", "create": "database_create"},
+	"engine": {"architecture": "starlark", "version": "1"},
+	"files": [ "friends.star" ],
+	"database": {"file": "friends.db", "create": "database_create"},
 
 	"icons": [
 		{"path": "friends", "name": "Friends", "icon": "friends.png"}
@@ -31,6 +30,10 @@
 				"accept": {"function": "event_accept"},
 				"cancel": {"function": "event_cancel"},
 				"invite": {"function": "event_invite"}
+			},
+
+			"functions": {
+				"list": {"function": "function_list"}
 			}
 		}
 	}
