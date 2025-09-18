@@ -1,5 +1,6 @@
-# Mochi Friends app
+# Mochi friends app
 # Copyright Alistair Cunningham 2024-2025
+
 
 # Create database for app
 def database_create():
@@ -11,16 +12,66 @@ def database_create():
 	mochi.db.query("create index invites_direction on invites( direction )")
 	return 1
 
+
+# Accept a friend's invitation
+def action_accept(action, inputs):
+	identity = action["identity.id"]
+	id = inputs.get("id")
+
+	i = mochi.db.query("select * from invites where identity=? and id=? and direction='from'", identity, id)
+	if not i:
+		mochi.action.error(400, "Invitation from friend not found")
+		return
+
+	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, i["name"])
+	mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
+	mochi.db.query("delete from invites where identity=? and id=?'", identity, id)
+	mochi.action.write("accept", action["format"])
+
+
 # Create a new friend
 def action_create(action, inputs):
-	err = create(action["identity.id"], action["identity.name"], inputs.get("id"), inputs.get("name"), True)
-	if err:
-		mochi.action.error(500, err)
-		return
-	mochi.action.write("created", action["format"])
+	identity = action["identity.id"]
+	id = inputs.get("id")
+	name = inputs.get("name")
 
-def action_new(action, inputs):
-	mochi.action.write("new", action["format"])
+	if not mochi.text.valid(id, "entity"):
+		mochi.action.error(400, "Invalid friend ID")
+		return
+
+	if not mochi.text.valid(name, "line"):
+		mochi.action.error(400, "Invalid friend name")
+		return
+
+	if mochi.db.exists("select id from friends where identity=? and id=?", identity, id):
+		mochi.action.error(400, "You are already friends")
+
+	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
+
+	if mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
+		# We have an existing invitation from them, so accept it automatically
+		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
+		mochi.db.query("delete from invites where identity=? and id=?", identity, id)
+	else:
+		# Send invitation
+		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "invite"}, {"name": action["identity.name"]})
+		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'to', ?, ? )", identity, id, name, mochi.time.now())
+
+	mochi.action.write("create", action["format"])
+
+
+# Delete a friend
+def action_delete(action, inputs):
+	mochi.db.query("delete from invites where identity=? and id=?", action["identity.id"], inputs.get("id"))
+	mochi.db.query("delete from friends where identity=? and id=?", action["identity.id"], inputs.get("id"))
+	mochi.action.write("delete", action["format"])
+
+
+# Ignore a friend's invitation
+def action_ignore(action, inputs):
+	mochi.db.query("delete from invites where identity=? and id=? and direction='from'", action["identity.id"], inputs.get("id"))
+	mochi.action.write("ignore", action["format"])
+
 
 # List friends
 def action_list(action, inputs):
@@ -29,37 +80,39 @@ def action_list(action, inputs):
 		"invites": mochi.db.query("select * from invites where direction='from' order by updated desc")
 	})
 
+
+# Add a new friend
+def action_new(action, inputs):
+	mochi.action.write("new", action["format"])
+
+
+# Search for friends to add
 def action_search(action, inputs):
 	mochi.action.write("search", action["format"], {"results": mochi.directory.search("person", inputs.get("search", ""), False)})
 
-# Helper function to create a friend
-#TODO Return success or failure to caller
-def create(identity, me, id, name, invite):
-	if not mochi.text.valid(id, "entity"):
-		mochi.action.error(400, "Invalid friend ID")
+
+# Friend accepted our invitation
+def event_accept(event, content):
+	i = mochi.db.exists("select * from invites where identity=? and id=? and direction='to'", event["to"], event["from"])
+	if not i:
+		return
+
+	mochi.db.query("delete from invites where identity=? and id=?", i["identity"], i["id"])
+	mochi.service.call("notifications", "create", "friends", "accept", i["id"], i["name"] + " accepted your friend invitation", "/friends")
+
+# Received an invitation
+def event_invite(event, content):
+	if not mochi.text.valid(content.get("name"), "line"):
 		return
 	
-	if not mochi.text.valid(name, "name"):
-		mochi.action.error(400, "Invalid friend name")
-		return
-	
-	if mochi.db.exists("select id from friends where identity=? and id=?", identity, id):
-		mochi.action.error(400, "You are already friends")
-		return
+	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", event["to"], event["from"]):
+		# We have an existing invitation to them, so accept theirs automatically
+		mochi.message.send({"from": event["to"], "to": event["from"], "service": "friends", "event": "accept"})
+		mochi.db.query("delete from invites where identity=? and id=?", event["to"], event["from"])
+	else:
+		# Store the invitation, but don't notify the user so we don't have notification spam
+		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", event["to"], event["from"], content.get("name"), mochi.time.now())
 
-	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
-
-	if mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
-		# We have an existing invitation from them, so accept it automatically
-		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
-		mochi.db.query("delete from invites where identity=? and id=? and direction='from'", identity, id)
-
-	elif invite:
-		# Send invitation
-		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "invite"}, {"name": me})
-		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'to', ?, ? )", identity, id, name, mochi.time.now())
-
-	mochi.broadcast.publish("friends", "create", id)
 
 # Helper function to list friends
 def function_list():
