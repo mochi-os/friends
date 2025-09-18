@@ -23,12 +23,13 @@ def action_accept(action, inputs):
 		mochi.action.error(400, "Invitation from friend not found")
 		return
 
-	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, i["name"])
+	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, i[0]["name"])
 	mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
-	mochi.db.query("delete from invites where identity=? and id=?'", identity, id)
+	mochi.db.query("delete from invites where identity=? and id=?", identity, id)
 	mochi.action.write("accept", action["format"])
 
 
+#TODO Test manual create
 # Create a new friend
 def action_create(action, inputs):
 	identity = action["identity.id"]
@@ -45,6 +46,7 @@ def action_create(action, inputs):
 
 	if mochi.db.exists("select id from friends where identity=? and id=?", identity, id):
 		mochi.action.error(400, "You are already friends")
+		return
 
 	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
 
@@ -75,6 +77,7 @@ def action_ignore(action, inputs):
 
 # List friends
 def action_list(action, inputs):
+	mochi.service.call("notifications", "clear.app", "friends")
 	mochi.action.write("list", action["format"], {
 		"friends": mochi.db.query("select * from friends order by name, identity, id"),
 		"invites": mochi.db.query("select * from invites where direction='from' order by updated desc")
@@ -93,12 +96,13 @@ def action_search(action, inputs):
 
 # Friend accepted our invitation
 def event_accept(event, content):
-	i = mochi.db.exists("select * from invites where identity=? and id=? and direction='to'", event["to"], event["from"])
+	i = mochi.db.query("select * from invites where identity=? and id=? and direction='to'", event["to"], event["from"])
 	if not i:
 		return
 
-	mochi.db.query("delete from invites where identity=? and id=?", i["identity"], i["id"])
-	mochi.service.call("notifications", "create", "friends", "accept", i["id"], i["name"] + " accepted your friend invitation", "/friends")
+	mochi.db.query("delete from invites where identity=? and id=?", i[0]["identity"], i[0]["id"])
+	mochi.service.call("notifications", "create", "friends", "accept", i[0]["id"], i[0]["name"] + " accepted your friend invitation", "/friends")
+
 
 # Received an invitation
 def event_invite(event, content):
