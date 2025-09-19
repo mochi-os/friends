@@ -29,7 +29,6 @@ def action_accept(action, inputs):
 	mochi.action.write("accept", action["format"])
 
 
-#TODO Test manual create
 # Create a new friend
 def action_create(action, inputs):
 	identity = action["identity.id"]
