@@ -18,12 +18,12 @@ def action_accept(action, inputs):
 	identity = action["identity.id"]
 	id = inputs.get("id")
 
-	i = mochi.db.query("select * from invites where identity=? and id=? and direction='from'", identity, id)
+	i = mochi.db.row("select * from invites where identity=? and id=? and direction='from'", identity, id)
 	if not i:
 		mochi.action.error(400, "Invitation from friend not found")
 		return
 
-	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, i[0]["name"])
+	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, i["name"])
 	mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
 	mochi.db.query("delete from invites where identity=? and id=?", identity, id)
 	mochi.action.write("accept", action["format"])
@@ -95,12 +95,12 @@ def action_search(action, inputs):
 
 # Friend accepted our invitation
 def event_accept(event, content):
-	i = mochi.db.query("select * from invites where identity=? and id=? and direction='to'", event["to"], event["from"])
+	i = mochi.db.row("select * from invites where identity=? and id=? and direction='to'", event["to"], event["from"])
 	if not i:
 		return
 
-	mochi.db.query("delete from invites where identity=? and id=?", i[0]["identity"], i[0]["id"])
-	mochi.service.call("notifications", "create", "friends", "accept", i[0]["id"], i[0]["name"] + " accepted your friend invitation", "/friends")
+	mochi.db.query("delete from invites where identity=? and id=?", i["identity"], i["id"])
+	mochi.service.call("notifications", "create", "friends", "accept", i["id"], i["name"] + " accepted your friend invitation", "/friends")
 
 
 # Received an invitation
@@ -115,6 +115,11 @@ def event_invite(event, content):
 	else:
 		# Store the invitation, but don't notify the user so we don't have notification spam
 		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", event["to"], event["from"], content.get("name"), mochi.time.now())
+
+
+# Helper function to get a friend
+def function_get(id):
+	return mochi.db.row("select * from friends where id=?", id)
 
 
 # Helper function to list friends
