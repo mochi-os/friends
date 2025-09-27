@@ -35,11 +35,11 @@ def action_create(action, inputs):
 	id = inputs.get("id")
 	name = inputs.get("name")
 
-	if not mochi.text.valid(id, "entity"):
+	if not mochi.valid(id, "entity"):
 		mochi.action.error(400, "Invalid friend ID")
 		return
 
-	if not mochi.text.valid(name, "line"):
+	if not mochi.valid(name, "line"):
 		mochi.action.error(400, "Invalid friend name")
 		return
 
@@ -105,7 +105,7 @@ def event_accept(event, content):
 
 # Received an invitation
 def event_invite(event, content):
-	if not mochi.text.valid(content.get("name"), "line"):
+	if not mochi.valid(content.get("name"), "line"):
 		return
 	
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", event["to"], event["from"]):
