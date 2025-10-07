@@ -14,6 +14,7 @@
 		"friends": {
 			"actions": {
 				"": {"function": "action_list"},
+				"list": {"function": "action_list"},
 				"accept": {"function": "action_accept"},
 				"create": {"function": "action_create"},
 				"delete": {"function": "action_delete"},
