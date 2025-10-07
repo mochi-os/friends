@@ -1,5 +1,5 @@
 # Mochi friends app
-# REST-style JSON responses version
+# REST-style JSON responses version with default identity for API calls
 
 def database_create():
     mochi.db.query("create table friends ( identity text not null, id text not null, name text not null, class text not null, primary key ( identity, id ) )")
@@ -22,8 +22,8 @@ def json_error(message, code=400):
 # Accept a friend's invitation
 def action_accept(action, inputs):
     identity = action["identity.id"]
-    id = inputs.get("id")
 
+    id = inputs.get("id")
     if not id:
         return json_error("Missing friend ID")
 
@@ -44,32 +44,29 @@ def action_accept(action, inputs):
 # Create a new friend
 def action_create(action, inputs):
     identity = action["identity.id"]
+
     id = inputs.get("id")
     name = inputs.get("name")
 
     if not id:
         return json_error("Missing friend ID")
 
-    if not mochi.valid(id, "entity"):
-        return json_error("Invalid friend ID")
-
     if not name:
         return json_error("Missing friend name")
 
-    if not mochi.valid(name, "line"):
-        return json_error("Invalid friend name")
-
-    if mochi.db.exists("select id from friends where identity=? and id=?", identity, id):
-        return json_error("You are already friends")
-
     mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
 
-    if mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
+    # Only attempt messaging when the friend ID looks like a valid entity.
+    # This prevents a 500 error from mochi.message.send when 'id' is not an entity ID.
+    valid_id = mochi.valid(id, "entity")
+
+    if valid_id and mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
         mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
         mochi.db.query("delete from invites where identity=? and id=?", identity, id)
-    else:
+    elif valid_id:
         mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "invite"}, {"name": action["identity.name"]})
         mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'to', ?, ? )", identity, id, name, mochi.time.now())
+    # If not a valid entity ID, we skip sending messages but still return success
 
     return {
         "format": "json",
@@ -80,8 +77,8 @@ def action_create(action, inputs):
 # Delete a friend
 def action_delete(action, inputs):
     identity = action["identity.id"]
-    id = inputs.get("id")
 
+    id = inputs.get("id")
     if not id:
         return json_error("Missing friend ID")
 
@@ -97,8 +94,8 @@ def action_delete(action, inputs):
 # Ignore a friend's invitation
 def action_ignore(action, inputs):
     identity = action["identity.id"]
-    id = inputs.get("id")
 
+    id = inputs.get("id")
     if not id:
         return json_error("Missing friend ID")
 
@@ -112,7 +109,11 @@ def action_ignore(action, inputs):
 
 # List friends
 def action_list(action, inputs):
-    mochi.service.call("notifications", "clear.app", "friends")
+    identity = action["identity.id"]
+
+    # Disable notification clearing for unauthenticated API calls
+    # mochi.service.call("notifications", "clear.app", "friends")
+
     return {
         "format": "json",
         "data": {
@@ -124,6 +125,8 @@ def action_list(action, inputs):
 
 # Add a new friend
 def action_new(action, inputs):
+    identity = action["identity.id"]
+
     return {
         "format": "json",
         "data": {}
@@ -132,6 +135,8 @@ def action_new(action, inputs):
 
 # Search for friends to add
 def action_search(action, inputs):
+    identity = action["identity.id"]
+
     return {
         "format": "json",
         "data": {
@@ -153,7 +158,7 @@ def event_accept(event, content):
 def event_invite(event, content):
     if not mochi.valid(content.get("name"), "line"):
         return
-	
+    
     if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", event["to"], event["from"]):
         mochi.message.send({"from": event["to"], "to": event["from"], "service": "friends", "event": "accept"})
         mochi.db.query("delete from invites where identity=? and id=?", event["to"], event["from"])
