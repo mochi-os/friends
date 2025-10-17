@@ -1,7 +1,7 @@
 {
 	"version": "1.0",
 	"label": "app_name",
-	"engine": {"architecture": "starlark", "version": "1"},
+	"engine": {"architecture": "starlark", "version": 1},
 	"files": [ "friends.star" ],
 	"database": {"file": "friends.db", "create": "database_create"},
 
