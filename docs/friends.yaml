@@ -1,0 +1,206 @@
+openapi: "3.0.3"
+info:
+  title: "Friends App API"
+  version: "0.1.0"
+  description: |
+    HTTP API for the 'friends' app 
+
+paths:
+  "/api/friends/create":
+    post:
+      summary: Create or invite a friend
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, name]
+              properties:
+                id:
+                  type: string
+                  description: "Entity id of the friend to add or invite"
+                name:
+                  type: string
+                  description: "Display name for the friend"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyData'
+
+  "/api/friends/accept":
+    post:
+      summary: Accept a friend invitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+                  description: "ID of the friend who invited you"
+      responses:
+        "200":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyData'
+
+  "/api/friends/delete":
+    post:
+      summary: Remove a friend or cancel an invite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyData'
+
+  "/api/friends/ignore":
+    post:
+      summary: Ignore (decline) a friend's invitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+      responses:
+        "200":
+          description: Ignored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyData'
+
+  "/api/friends/list":
+    post:
+      summary: List friends and incoming invites
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+
+  "/api/friends/new":
+    post:
+      summary: Helper for creating a new friend (UI defaults)
+      responses:
+        "200":
+          description: New friend defaults
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyData'
+
+  "/api/friends/search":
+    post:
+      summary: Search directory for people to add as friends
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [search]
+              properties:
+                search:
+                  type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Person'
+
+components:
+  schemas:
+    EmptyData:
+      type: object
+      properties:
+        data:
+          type: object
+          description: Empty successful response
+
+    Friend:
+      type: object
+      properties:
+        identity:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        class:
+          type: string
+
+    Invite:
+      type: object
+      properties:
+        identity:
+          type: string
+        id:
+          type: string
+        direction:
+          type: string
+        name:
+          type: string
+        updated:
+          type: integer
+
+    ListResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            friends:
+              type: array
+              items:
+                $ref: '#/components/schemas/Friend'
+            invites:
+              type: array
+              items:
+                $ref: '#/components/schemas/Invite'
+
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
