@@ -1,0 +1,118 @@
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationOptions,
+  type UseQueryOptions,
+} from '@tanstack/react-query'
+import friendsApi, {
+  type GetFriendsListResponse,
+  type MutationSuccessResponse,
+  type SearchUsersResponse,
+  type CreateFriendRequest,
+} from '@/api/friends'
+
+export const friendKeys = {
+  all: () => ['friends'] as const,
+  search: (query: string) => ['friends', 'search', query] as const,
+}
+
+export const useFriendsQuery = () =>
+  useQuery<GetFriendsListResponse>({
+    queryKey: friendKeys.all(),
+    queryFn: () => friendsApi.list(),
+  })
+
+interface FriendMutationVariables {
+  friendId: string
+}
+
+export const useAcceptFriendInviteMutation = (
+  options?: UseMutationOptions<
+    MutationSuccessResponse,
+    unknown,
+    FriendMutationVariables,
+    unknown
+  >
+) => {
+  const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options ?? {}
+  return useMutation({
+    mutationFn: ({ friendId }) => friendsApi.acceptInvite({ id: friendId }),
+    onSuccess: (data, variables, context, mutation) => {
+      queryClient.invalidateQueries({ queryKey: friendKeys.all() })
+      onSuccess?.(data, variables, context, mutation)
+    },
+    ...rest,
+  })
+}
+
+export const useDeclineFriendInviteMutation = (
+  options?: UseMutationOptions<
+    MutationSuccessResponse,
+    unknown,
+    FriendMutationVariables,
+    unknown
+  >
+) => {
+  const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options ?? {}
+  return useMutation({
+    mutationFn: ({ friendId }) => friendsApi.declineInvite({ id: friendId }),
+    onSuccess: (data, variables, context, mutation) => {
+      queryClient.invalidateQueries({ queryKey: friendKeys.all() })
+      onSuccess?.(data, variables, context, mutation)
+    },
+    ...rest,
+  })
+}
+
+export const useRemoveFriendMutation = (
+  options?: UseMutationOptions<
+    MutationSuccessResponse,
+    unknown,
+    FriendMutationVariables,
+    unknown
+  >
+) => {
+  const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options ?? {}
+  return useMutation({
+    mutationFn: ({ friendId }) => friendsApi.remove(friendId),
+    onSuccess: (data, variables, context, mutation) => {
+      queryClient.invalidateQueries({ queryKey: friendKeys.all() })
+      onSuccess?.(data, variables, context, mutation)
+    },
+    ...rest,
+  })
+}
+
+export const useSearchUsersQuery = (
+  query: string,
+  options?: Omit<UseQueryOptions<SearchUsersResponse>, 'queryKey' | 'queryFn'>
+) =>
+  useQuery<SearchUsersResponse>({
+    queryKey: friendKeys.search(query),
+    queryFn: () => friendsApi.searchUsers(query),
+    ...options,
+  })
+
+export const useCreateFriendMutation = (
+  options?: UseMutationOptions<
+    MutationSuccessResponse,
+    unknown,
+    CreateFriendRequest,
+    unknown
+  >
+) => {
+  const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options ?? {}
+  return useMutation({
+    mutationFn: (payload: CreateFriendRequest) => friendsApi.create(payload),
+    onSuccess: (data, variables, context, mutation) => {
+      queryClient.invalidateQueries({ queryKey: friendKeys.all() })
+      onSuccess?.(data, variables, context, mutation)
+    },
+    ...rest,
+  })
+}
