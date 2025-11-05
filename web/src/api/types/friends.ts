@@ -1,0 +1,86 @@
+export interface PaginationMeta {
+  total?: number
+  page?: number
+  limit?: number
+}
+
+export interface Friend {
+  class: string
+  id: string
+  identity: string
+  name: string
+  [key: string]: unknown
+}
+
+export type FriendInvite = Friend
+
+export interface FriendsListEnvelope extends PaginationMeta {
+  friends?: unknown
+  invites?: unknown
+  data?: unknown
+  items?: unknown
+  results?: unknown
+}
+
+// Friends endpoints have emitted different wrappers (top-level, data object, nested collections), so we normalise at the service layer.
+export type GetFriendsListRaw = Friend[] | FriendsListEnvelope
+
+export interface GetFriendsListResponse {
+  friends: Friend[]
+  invites: FriendInvite[]
+  total?: number
+  page?: number
+  limit?: number
+}
+
+export interface InviteFriendRequest {
+  email: string
+}
+
+export interface CreateFriendRequest {
+  id: string
+  name: string
+}
+
+export interface AcceptInviteRequest {
+  id: string
+}
+
+export interface DeclineInviteRequest {
+  id: string
+}
+
+export interface RemoveFriendRequest {
+  friendId: string
+}
+
+export interface MutationSuccessResponse {
+  success: boolean
+  message?: string
+}
+
+export interface SearchUsersRequest {
+  query: string
+  limit?: number
+  page?: number
+}
+
+export interface User {
+  class: string
+  created: number
+  data: string
+  fingerprint: string
+  fingerprint_hyphens: string
+  id: string
+  location: string
+  name: string
+  updated: number
+  [key: string]: unknown
+}
+
+export interface SearchUsersResponse {
+  data: {
+    results: User[]
+    [key: string]: unknown
+  }
+}
