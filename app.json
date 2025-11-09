@@ -2,14 +2,12 @@
 	"version": "1.0",
 	"label": "app_name",
 	"engine": {"architecture": "starlark", "version": 2},
-	"files": [ "friends.star", "database.star" ],
+	"files": [ "friends.star" ],
 
 	"database": {
-		"version": 1,
+		"schema": 1,
 		"file": "friends.db",
-		"create": {"function": "database_create"},
-		"upgrade": {"function": "database_upgrade"},
-		"downgrade": {"function": "database_downgrade"}
+		"create": {"function": "database_create"}
 	},
 
 	"icons": [
