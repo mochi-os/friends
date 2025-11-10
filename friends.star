@@ -7,7 +7,6 @@ def database_create():
     mochi.db.query("create index friends_name on friends( name )")
     mochi.db.query("create table invites ( identity text not null, id text not null, direction text not null, name text not null, updated integer not null, primary key ( identity, id, direction ) )")
     mochi.db.query("create index invites_direction on invites( direction )")
-    return 1
 
 def json_error(message, code=400):
     return {"status": code, "error": message, "data": {}}
