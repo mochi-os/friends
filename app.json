@@ -19,7 +19,9 @@
 	"paths": {
 		"friends": {
 			"actions": {
-				"": {"function": "action_list"},
+				"": {"file": "web/dist/index.html"},
+				"assets": {"files": "web/dist/assets"},
+				"images": {"files": "web/dist/images"},
 				"list": {"function": "action_list"},
 				"accept": {"function": "action_accept"},
 				"create": {"function": "action_create"},
