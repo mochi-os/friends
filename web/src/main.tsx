@@ -64,19 +64,9 @@ const queryClient = new QueryClient({
   }),
 })
 
-// Create a new router instance
-// Dynamically detect basepath from current location
-// This allows the app to work regardless of deployment path (configured in app.json)
-// Handles both single-level paths (/chat/) and multi-level paths (/friends/)
 const getBasepath = () => {
   const pathname = window.location.pathname;
-  // Extract basepath: 
-  // /chat/ -> /chat/
-  // /chat/some-route -> /chat/
-  // /friends/ -> /friends/
-  // /friends/some-route -> /friends/
-  // Match pattern: one or more path segments ending with /
-  const match = pathname.match(/^(\/[^/]+(?:\/[^/]+)*\/)/);
+  const match = pathname.match(/^(\/[^/]+\/)/);
   return match ? match[1] : '/';
 };
 
