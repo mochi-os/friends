@@ -64,12 +64,16 @@ const queryClient = new QueryClient({
   }),
 })
 
-// Create a new router instance
-// Note: basepath matches vite.config.ts base path
+const getBasepath = () => {
+  const pathname = window.location.pathname;
+  const match = pathname.match(/^(\/[^/]+\/)/);
+  return match ? match[1] : '/';
+};
+
 const router = createRouter({
   routeTree,
   context: { queryClient },
-  basepath: '/apps/friends/',
+  basepath: getBasepath(),
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
 })

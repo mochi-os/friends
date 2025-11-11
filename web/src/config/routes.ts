@@ -15,13 +15,13 @@ export const APP_ROUTES = {
   },
   // Chat app
   CHAT: {
-    BASE: '/apps/chat/',
-    HOME: '/apps/chat/',
+    BASE: '/chat/',
+    HOME: '/chat/',
   },
   // Friends app
   FRIENDS: {
-    BASE: '/apps/friends/',
-    HOME: '/apps/friends/',
+    BASE: '/friends/',
+    HOME: '/friends/',
   },
   // Home app (future)
   HOME: {
