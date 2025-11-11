@@ -2,6 +2,7 @@ import {
   AudioWaveform,
   Command,
   GalleryVerticalEnd,
+  Home,
   MessagesSquare,
   UserPlus,
 } from 'lucide-react'
@@ -33,23 +34,25 @@ export const sidebarData: SidebarData = {
   ],
   navGroups: [
     {
-      title: 'General',
-      items: [
-        {
-          title: 'Friends',
-          url: '/',
-          icon: UserPlus,
-        },
-      ],
-    },
-    {
       title: 'Apps',
       items: [
+        {
+          title: 'Home',
+          url: APP_ROUTES.HOME.HOME,
+          icon: Home,
+          external: true, // Cross-app navigation
+        },
         {
           title: 'Chat',
           url: APP_ROUTES.CHAT.HOME,
           icon: MessagesSquare,
           external: true, // Cross-app navigation
+        },
+        {
+          title: 'Friends',
+          url: "/",
+          icon: UserPlus,
+          badge: '3',
         },
       ],
     },
