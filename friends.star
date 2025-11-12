@@ -34,7 +34,7 @@ def action_create(a):
     id = a.input("id")
     if not id:
         return json_error("Missing friend ID")
-	name = a.input("name")
+    name = a.input("name")
     if not name:
         return json_error("Missing friend name")
 

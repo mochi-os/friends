@@ -85,7 +85,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Initialize auth state from cookie on app start
+// Initialize auth state from cookie on app start BEFORE router loads
+// This ensures cookies are synced before any route guards run
 useAuthStore.getState().initialize()
 
 // Render the app
