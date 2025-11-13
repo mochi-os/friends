@@ -17,7 +17,6 @@ import {
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { NotificationsDropdown } from '@/components/notifications-dropdown'
 import {
   useFriendsQuery,
@@ -83,7 +82,6 @@ export function Friends() {
         <Header>
           <Search />
           <div className='ms-auto flex items-center space-x-4'>
-            <ThemeSwitch />
           </div>
         </Header>
         <Main>
@@ -101,7 +99,6 @@ export function Friends() {
         <Search />
         <div className='ms-auto flex items-center space-x-4'>
           <NotificationsDropdown />
-          <ThemeSwitch />
         </div>
       </Header>
 
