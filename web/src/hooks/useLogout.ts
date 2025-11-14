@@ -1,24 +1,10 @@
 import { useCallback } from 'react'
 import { useAuth } from './useAuth'
 import { toast } from 'sonner'
-import { APP_ROUTES } from '@/config/routes'
+import { requestHelpers } from '@/lib/request'
+import Cookies from 'js-cookie'
+import endpoints from '@/api/endpoints'
 
-/**
- * Hook to handle logout functionality
- * 
- * Usage:
- * ```tsx
- * function LogoutButton() {
- *   const { logout, isLoggingOut } = useLogout()
- *   
- *   return (
- *     <button onClick={logout} disabled={isLoggingOut}>
- *       {isLoggingOut ? 'Logging out...' : 'Logout'}
- *     </button>
- *   )
- * }
- * ```
- */
 export function useLogout() {
   const { logout: clearAuth, setLoading, isLoading } = useAuth()
 
@@ -26,26 +12,38 @@ export function useLogout() {
     try {
       setLoading(true)
 
-      // Optional: Call backend logout endpoint
-      // This would invalidate the token on the server
-      // await authApi.logout()
+      // Call backend logout API to delete login from database
+      try {
+        await requestHelpers.get(endpoints.auth.logout)
+      } catch (error) {
+        // Log error but continue with local cleanup
+        if (import.meta.env.DEV) {
+          console.error('[Logout] Backend logout failed:', error)
+        }
+      }
 
-      // Clear all auth state (cookie + store)
+      // Remove both cookies
+      Cookies.remove('login', { path: '/' })
+      Cookies.remove('user_email', { path: '/' })
+
+      // Clear auth store
       clearAuth()
 
       // Show success message
       toast.success('Logged out successfully')
 
       // Redirect to core auth app (cross-app navigation)
-      window.location.href = import.meta.env.VITE_AUTH_URL || APP_ROUTES.CORE.SIGN_IN
-    } catch (error) {
+      window.location.href = import.meta.env.VITE_AUTH_LOGIN_URL
+    } catch (_error) {
       // Even if backend call fails, clear local auth
+      Cookies.remove('login', { path: '/' })
+      Cookies.remove('user_email', { path: '/' })
       clearAuth()
-      
+
       toast.error('Logged out (with errors)')
-      
+
       // Redirect to core auth app (cross-app navigation)
-      window.location.href = import.meta.env.VITE_AUTH_URL || APP_ROUTES.CORE.SIGN_IN
+      window.location.href = import.meta.env.VITE_AUTH_LOGIN_URL
     } finally {
       setLoading(false)
     }
