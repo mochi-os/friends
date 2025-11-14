@@ -83,7 +83,7 @@ export function NavUser() {
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <Sun />
+                <Sun /> {' '}
                   Theme
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
@@ -120,7 +120,7 @@ export function NavUser() {
                 className='hover:bg-destructive/10 hover:text-destructive [&_svg]:hover:text-destructive'
               >
                 <LogOut />
-                Sign out
+                Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
