@@ -29,8 +29,8 @@ const logError = (context: string, error: unknown) => {
  */
 export const requestCode = async () => {
   // Auth is handled by core app - this is a placeholder
-  // In practice, user should authenticate via /sign-in
-  throw new Error('Authentication is handled by the core app. Please use /sign-in')
+  // In practice, user should authenticate via /login
+  throw new Error('Authentication is handled by the core app. Please use /login')
 }
 
 /**
@@ -39,8 +39,8 @@ export const requestCode = async () => {
  */
 export const verifyCode = async () => {
   // Auth is handled by core app - this is a placeholder
-  // In practice, user should authenticate via /sign-in
-  throw new Error('Authentication is handled by the core app. Please use /sign-in')
+  // In practice, user should authenticate via /login
+  throw new Error('Authentication is handled by the core app. Please use /login')
 }
 
 /**
@@ -99,7 +99,7 @@ export const logout = async (): Promise<void> => {
   // Clear auth state
   useAuthStore.getState().clearAuth()
   // Redirect to core auth app
-  window.location.href = '/sign-in'
+  window.location.href = '/login'
 }
 
 /**
