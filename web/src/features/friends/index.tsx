@@ -25,6 +25,7 @@ import {
   useRemoveFriendMutation,
 } from '@/hooks/useFriends'
 import { AddFriendDialog } from './components/add-friend-dialog'
+import { buildAvatarUrl } from './utils/avatar'
 
 export function Friends() {
   const [search, setSearch] = useState('')
@@ -155,7 +156,10 @@ export function Friends() {
                       <CardContent className='p-4'>
                         <div className='flex flex-col items-center text-center space-y-3'>
                           <Avatar className='h-16 w-16'>
-                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.name}`} />
+                            <AvatarImage
+                              src={buildAvatarUrl(friend.id || friend.name)}
+                              alt={`${friend.name} avatar`}
+                            />
                             <AvatarFallback className='text-lg font-semibold bg-gradient-to-br from-primary to-primary/60 text-primary-foreground'>
                               {friend.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
@@ -216,7 +220,10 @@ export function Friends() {
                       <CardContent className='p-4'>
                         <div className='flex flex-col items-center text-center space-y-3'>
                           <Avatar className='h-16 w-16'>
-                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${invite.name}`} />
+                            <AvatarImage
+                              src={buildAvatarUrl(invite.id || invite.name)}
+                              alt={`${invite.name} avatar`}
+                            />
                             <AvatarFallback className='text-lg font-semibold bg-gradient-to-br from-primary to-primary/60 text-primary-foreground'>
                               {invite.name.charAt(0).toUpperCase()}
                             </AvatarFallback>

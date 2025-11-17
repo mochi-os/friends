@@ -33,10 +33,6 @@ export interface GetFriendsListResponse {
   limit?: number
 }
 
-export interface InviteFriendRequest {
-  email: string
-}
-
 export interface CreateFriendRequest {
   id: string
   name: string
