@@ -139,11 +139,33 @@ const createFriend = (payload: CreateFriendRequest) =>
     )
   )
 
-const acceptFriendInvite = (payload: AcceptInviteRequest) =>
-  toMutationSuccess(requestHelpers.post(endpoints.friends.accept, payload))
+const acceptFriendInvite = (payload: AcceptInviteRequest) => {
+  // Backend expects form-data (application/x-www-form-urlencoded)
+  const formData = new URLSearchParams()
+  formData.append('id', payload.id)
 
-const declineFriendInvite = (payload: DeclineInviteRequest) =>
-  toMutationSuccess(requestHelpers.post(endpoints.friends.ignore, payload))
+  return toMutationSuccess(
+    requestHelpers.post(endpoints.friends.accept, formData.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+  )
+}
+
+const declineFriendInvite = (payload: DeclineInviteRequest) => {
+  // Backend expects form-data (application/x-www-form-urlencoded)
+  const formData = new URLSearchParams()
+  formData.append('id', payload.id)
+
+  return toMutationSuccess(
+    requestHelpers.post(endpoints.friends.ignore, formData.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+  )
+}
 
 const removeFriend = (friendId: string) =>
   toMutationSuccess(
