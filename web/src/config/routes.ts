@@ -15,8 +15,8 @@ export const APP_ROUTES = {
   },
   // Chat app
   CHAT: {
-    BASE: '/chat/',
-    HOME: '/chat/',
+    BASE: '/chat',
+    HOME: '/chat',
   },
   // Friends app
   FRIENDS: {
@@ -26,17 +26,17 @@ export const APP_ROUTES = {
   // Home app (future)
   HOME: {
     BASE: '/home',
-    HOME: '/home/',
+    HOME: '/home',
   },
   // Feeds app (future)
   FEEDS: {
     BASE: '/feeds',
-    HOME: '/feeds/',
+    HOME: '/feeds',
   },
   // Notifications app
   NOTIFICATIONS: {
-    BASE: '/notifications/',
-    HOME: '/notifications/',
+    BASE: '/notifications',
+    HOME: '/notifications',
   },
 } as const
 
