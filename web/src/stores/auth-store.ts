@@ -1,16 +1,16 @@
 // feat(auth): implement login-header based auth flow
 import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
+import { readProfileCookie, clearProfileCookie } from '@/lib/profile-cookie'
 
 /**
  * Cookie names for authentication
  * - login: Primary credential (raw value used as Authorization header)
  * - token: Optional fallback credential (used with Bearer prefix)
- * - email: User email for display purposes (persists across reloads)
+ * - mochi_me: Consolidated profile data (email, name, privacy)
  */
 const LOGIN_COOKIE = 'login'
 const TOKEN_COOKIE = 'token'
-const EMAIL_COOKIE = 'user_email'
 
 /**
  * Extract name from email (part before @)
@@ -134,7 +134,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
   // Initialize from cookies on store creation
   const initialLogin = getCookie(LOGIN_COOKIE) || ''
   const initialToken = parseTokenCookie(getCookie(TOKEN_COOKIE))
-  const initialEmail = getCookie(EMAIL_COOKIE) || ''
+  const profile = readProfileCookie()
+  const initialEmail = profile.email || ''
 
   // Try to extract user info from token if available (for display purposes)
   const initialUser = initialToken
@@ -143,7 +144,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         if (decoded?.email) {
           return {
             email: decoded.email,
-            name: decoded.name || extractNameFromEmail(decoded.email),
+            name: decoded.name || profile.name || extractNameFromEmail(decoded.email),
             ...decoded,
           } as AuthUser
         }
@@ -152,7 +153,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     : initialEmail
       ? {
           email: initialEmail,
-          name: extractNameFromEmail(initialEmail),
+          name: profile.name || extractNameFromEmail(initialEmail),
         }
       : null
 
@@ -187,12 +188,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         removeCookie(TOKEN_COOKIE)
       }
 
-      // Store email for persistence across reloads
-      if (user?.email) {
-        setCookie(EMAIL_COOKIE, user.email)
-      } else {
-        removeCookie(EMAIL_COOKIE)
-      }
+      // Note: Profile cookie (mochi_me) is managed by mochi-core, not by feature apps
 
       set({
         user,
@@ -208,13 +204,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
      * Update user information only (for profile updates)
      */
     setUser: (user) => {
-      // Store email in cookie for persistence
-      if (user?.email) {
-        setCookie(EMAIL_COOKIE, user.email)
-      } else {
-        removeCookie(EMAIL_COOKIE)
-      }
-
+      // Note: Profile cookie (mochi_me) is managed by mochi-core, not by feature apps
       set({
         user,
         // Keep authentication status based on credentials
@@ -286,7 +276,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     syncFromCookie: () => {
       const cookieLogin = getCookie(LOGIN_COOKIE) || ''
       const cookieToken = parseTokenCookie(getCookie(TOKEN_COOKIE))
-      const cookieEmail = getCookie(EMAIL_COOKIE) || ''
+      const profile = readProfileCookie()
+      const cookieEmail = profile.email || ''
       const storeLogin = get().rawLogin
       const storeToken = get().accessToken
       const storeEmail = get().user?.email
@@ -303,13 +294,13 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         const user: AuthUser | null = decoded?.email
           ? ({
               email: decoded.email,
-              name: decoded.name || extractNameFromEmail(decoded.email),
+              name: decoded.name || profile.name || extractNameFromEmail(decoded.email),
               ...decoded,
             } as AuthUser)
           : cookieEmail // Use stored email if no token
             ? {
                 email: cookieEmail,
-                name: extractNameFromEmail(cookieEmail),
+                name: profile.name || extractNameFromEmail(cookieEmail),
               }
             : get().user // Keep existing user if no token or email
 
@@ -332,7 +323,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     clearAuth: () => {
       removeCookie(LOGIN_COOKIE)
       removeCookie(TOKEN_COOKIE)
-      removeCookie(EMAIL_COOKIE)
+      clearProfileCookie()
 
       set({
         user: null,

@@ -2,13 +2,20 @@ const endpoints = {
   friends: {
     list: '/friends/list',
     search: '/friends/search',
-    invite: '/friends/invite',
     create: '/friends/create',
     accept: '/friends/accept',
     ignore: '/friends/ignore',
     delete: '/friends/delete',
   },
-   auth: {
+  chat: {
+    list: '/chat/list',
+    new: '/chat/new',
+    create: '/chat/create',
+    messages: (chatId: string) => `/chat/${chatId}/messages`,
+    send: (chatId: string) => `/chat/${chatId}/send`,
+    detail: (chatId: string) => `/chat/${chatId}`,
+  },
+  auth: {
     login: '/login',
     signup: '/signup',
     verify: '/login/auth',

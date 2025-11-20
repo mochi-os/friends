@@ -4,8 +4,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { getCookie } from '@/lib/cookies'
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 const devConsole = globalThis.console
 
@@ -120,11 +119,34 @@ apiClient.interceptors.request.use(
  */
 apiClient.interceptors.response.use(
   (response) => {
-    // Log successful response in development
-    if (import.meta.env.DEV) {
-      devConsole?.log?.(
-        `[API] ${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`
-      )
+    // Check for application-level errors in successful HTTP responses
+    // Some backends return HTTP 200 with error details in the response body
+    const responseData = response.data as unknown
+    if (
+      responseData &&
+      typeof responseData === 'object' &&
+      'error' in responseData &&
+      'status' in responseData
+    ) {
+      const errorData = responseData as { error?: string; status?: number }
+      if (errorData.error && errorData.status && errorData.status >= 400) {
+        // Show toast for application-level errors
+        toast.error(errorData.error || 'An error occurred')
+
+        // Log in development
+        if (import.meta.env.DEV) {
+          devConsole?.error?.(
+            `[API] Application error: ${errorData.error} (status: ${errorData.status})`
+          )
+        }
+      }
+    } else {
+      // Log successful response in development
+      if (import.meta.env.DEV) {
+        devConsole?.log?.(
+          `[API] ${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`
+        )
+      }
     }
 
     return response

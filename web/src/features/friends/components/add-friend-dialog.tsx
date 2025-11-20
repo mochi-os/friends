@@ -3,7 +3,7 @@ import { Search, Loader2, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useSearchUsersQuery, useCreateFriendMutation } from '@/hooks/useFriends'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   ResponsiveDialog,
@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { buildAvatarUrl } from '../utils/avatar'
 
 type AddFriendDialogProps = {
   open: boolean
@@ -170,6 +171,10 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                       >
                         <div className='flex min-w-0 flex-1 items-center gap-3'>
                           <Avatar className='h-10 w-10 shrink-0'>
+                            <AvatarImage
+                              src={buildAvatarUrl(user.id)}
+                              alt={`${user.name} avatar`}
+                            />
                             <AvatarFallback className='from-primary to-primary/60 text-primary-foreground bg-gradient-to-br font-semibold'>
                               {user.name.charAt(0).toUpperCase()}
                             </AvatarFallback>

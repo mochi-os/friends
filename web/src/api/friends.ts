@@ -7,7 +7,6 @@ import type {
   FriendInvite,
   GetFriendsListRaw,
   GetFriendsListResponse,
-  InviteFriendRequest,
   MutationSuccessResponse,
   SearchUsersResponse,
 } from '@/api/types/friends'
@@ -119,51 +118,71 @@ const searchUsers = async (query: string): Promise<SearchUsersResponse> => {
   return response
 }
 
-const inviteFriend = (payload: InviteFriendRequest) =>
-  requestHelpers.post<MutationSuccessResponse>(
-    endpoints.friends.invite,
-    payload
-  )
+const toMutationSuccess = async <T>(
+  promise: Promise<T>
+): Promise<MutationSuccessResponse> => {
+  await promise
+  return { success: true }
+}
 
 const createFriend = (payload: CreateFriendRequest) =>
-  requestHelpers.post<MutationSuccessResponse>(
-    endpoints.friends.create,
-    {},
-    {
-      params: {
-        id: payload.id,
-        name: payload.name,
+  toMutationSuccess(
+    requestHelpers.post(
+      endpoints.friends.create,
+      {},
+      {
+        params: {
+          id: payload.id,
+          name: payload.name,
+        },
+      }
+    )
+  )
+
+const acceptFriendInvite = (payload: AcceptInviteRequest) => {
+  // Backend expects form-data (application/x-www-form-urlencoded)
+  const formData = new URLSearchParams()
+  formData.append('id', payload.id)
+
+  return toMutationSuccess(
+    requestHelpers.post(endpoints.friends.accept, formData.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-    }
+    })
   )
+}
 
-const acceptFriendInvite = (payload: AcceptInviteRequest) =>
-  requestHelpers.post<MutationSuccessResponse>(
-    endpoints.friends.accept,
-    payload
-  )
+const declineFriendInvite = (payload: DeclineInviteRequest) => {
+  // Backend expects form-data (application/x-www-form-urlencoded)
+  const formData = new URLSearchParams()
+  formData.append('id', payload.id)
 
-const declineFriendInvite = (payload: DeclineInviteRequest) =>
-  requestHelpers.post<MutationSuccessResponse>(
-    endpoints.friends.ignore,
-    payload
+  return toMutationSuccess(
+    requestHelpers.post(endpoints.friends.ignore, formData.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
   )
+}
 
 const removeFriend = (friendId: string) =>
-  requestHelpers.post<MutationSuccessResponse>(
-    endpoints.friends.delete,
-    {},
-    {
-      params: {
-        id: friendId,
-      },
-    }
+  toMutationSuccess(
+    requestHelpers.post(
+      endpoints.friends.delete,
+      {},
+      {
+        params: {
+          id: friendId,
+        },
+      }
+    )
   )
 
 export const friendsApi = {
   list: listFriends,
   searchUsers,
-  invite: inviteFriend,
   create: createFriend,
   acceptInvite: acceptFriendInvite,
   declineInvite: declineFriendInvite,
@@ -177,7 +196,6 @@ export type {
   Friend,
   FriendInvite,
   GetFriendsListResponse,
-  InviteFriendRequest,
   MutationSuccessResponse,
   SearchUsersResponse,
 }

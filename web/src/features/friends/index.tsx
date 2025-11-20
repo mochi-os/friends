@@ -1,9 +1,15 @@
 import { useMemo, useState } from 'react'
+import { APP_ROUTES } from '@/config/routes'
 import { UserPlus, Users, MessageSquare, UserX } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
+import type { Friend } from '@/api/types/friends'
+import { useCreateChatMutation } from '@/hooks/useChats'
+import {
+  useFriendsQuery,
+  useAcceptFriendInviteMutation,
+  useDeclineFriendInviteMutation,
+  useRemoveFriendMutation,
+} from '@/hooks/useFriends'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,16 +20,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { FacelessAvatar } from '@/components/faceless-avatar'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
 import { NotificationsDropdown } from '@/components/notifications-dropdown'
-import {
-  useFriendsQuery,
-  useAcceptFriendInviteMutation,
-  useDeclineFriendInviteMutation,
-  useRemoveFriendMutation,
-} from '@/hooks/useFriends'
+import { Search } from '@/components/search'
 import { AddFriendDialog } from './components/add-friend-dialog'
 
 export function Friends() {
@@ -34,10 +44,44 @@ export function Friends() {
     friendId: string
     friendName: string
   }>({ open: false, friendId: '', friendName: '' })
+  const [pendingChatFriendId, setPendingChatFriendId] = useState<string | null>(
+    null
+  )
   const { data: friendsData, isLoading } = useFriendsQuery()
   const acceptInviteMutation = useAcceptFriendInviteMutation()
   const declineInviteMutation = useDeclineFriendInviteMutation()
   const removeFriendMutation = useRemoveFriendMutation()
+  const startChatMutation = useCreateChatMutation({
+    onSuccess: (data) => {
+      setPendingChatFriendId(null)
+      toast.success('Chat ready', {
+        description: 'Redirecting you to the conversation.',
+      })
+      const chatId = data.id
+      if (!chatId) {
+        return
+      }
+      const chatBaseUrl =
+        import.meta.env.VITE_APP_CHAT_URL ?? APP_ROUTES.CHAT.HOME
+      console.log('chatBaseUrl', chatBaseUrl)
+      const chatUrl = chatBaseUrl.startsWith('http')
+        ? new URL(chatBaseUrl)
+        : new URL(chatBaseUrl, window.location.origin)
+      chatUrl.searchParams.set('chat', chatId)
+      console.log('chatUrl', chatUrl)
+      /**
+       * NOTE: Chat lives in a separate micro-app. Use full-page navigation so the chat app
+       * can bootstrap with the selected chat ID.
+       */
+      window.location.assign(chatUrl.toString())
+    },
+    onError: (error) => {
+      setPendingChatFriendId(null)
+      const description =
+        error instanceof Error ? error.message : 'Please try again.'
+      toast.error('Unable to start chat', { description })
+    },
+  })
 
   const filteredFriends = useMemo(() => {
     const list = friendsData?.friends ?? []
@@ -76,16 +120,33 @@ export function Friends() {
     )
   }
 
+  const handleStartChat = (friend: Friend) => {
+    if (startChatMutation.isPending) {
+      return
+    }
+
+    const chatName = friend.name?.trim()
+    if (!chatName) {
+      toast.error('Unable to start chat', {
+        description: 'Friend name is missing. Please try again later.',
+      })
+      return
+    }
+
+    // TODO: Reuse an existing DM once chat-to-friend mapping is available.
+    setPendingChatFriendId(friend.id)
+    startChatMutation.mutate({ participantIds: [friend.id], name: chatName })
+  }
+
   if (isLoading && !friendsData) {
     return (
       <>
         <Header>
           <Search />
-          <div className='ms-auto flex items-center space-x-4'>
-          </div>
+          <div className='ms-auto flex items-center space-x-4'></div>
         </Header>
         <Main>
-          <div className='flex items-center justify-center h-64'>
+          <div className='flex h-64 items-center justify-center'>
             <div className='text-muted-foreground'>Loading friends...</div>
           </div>
         </Main>
@@ -125,67 +186,11 @@ export function Friends() {
             placeholder='Search friends...'
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className='w-full max-w-sm px-3 py-2 border border-border bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+            className='border-border bg-background focus:ring-ring w-full max-w-sm rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none'
           />
         </div>
 
         <div className='grid gap-6'>
-          {/* Friends List */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Users className='h-5 w-5' />
-                Friends ({filteredFriends.length})
-              </CardTitle>
-              <CardDescription>
-                Your current friends list
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {filteredFriends.length === 0 ? (
-                <div className='text-center py-8 text-muted-foreground'>
-                  <Users className='mx-auto h-12 w-12 mb-4 opacity-50' />
-                  <p>No friends found</p>
-                  {search && <p className='text-sm mt-2'>Try adjusting your search</p>}
-                </div>
-              ) : (
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
-                  {filteredFriends.map((friend) => (
-                    <Card key={friend.id} className='group hover:shadow-md transition-shadow'>
-                      <CardContent className='p-4'>
-                        <div className='flex flex-col items-center text-center space-y-3'>
-                          <Avatar className='h-16 w-16'>
-                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.name}`} />
-                            <AvatarFallback className='text-lg font-semibold bg-gradient-to-br from-primary to-primary/60 text-primary-foreground'>
-                              {friend.name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className='w-full'>
-                            <p className='font-medium truncate'>{friend.name}</p>
-                          </div>
-                          <div className='flex items-center gap-2 w-full'>
-                            <Button variant='outline' size='sm' className='flex-1'>
-                              <MessageSquare className='h-4 w-4 mr-1' />
-                              Chat
-                            </Button>
-                            <Button 
-                              variant='ghost' 
-                              size='sm'
-                              disabled={removeFriendMutation.isPending}
-                              onClick={() => handleRemoveFriend(friend.id, friend.name)}
-                            >
-                              <UserX className='h-4 w-4' />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Invitations */}
           <Card>
             <CardHeader>
@@ -198,51 +203,129 @@ export function Friends() {
                   </Badge>
                 )}
               </CardTitle>
-              <CardDescription>
-                Pending friend requests
-              </CardDescription>
+              <CardDescription>Pending friend requests</CardDescription>
             </CardHeader>
             <CardContent>
               {filteredInvites.length === 0 ? (
-                <div className='text-center py-8 text-muted-foreground'>
-                  <UserPlus className='mx-auto h-12 w-12 mb-4 opacity-50' />
+                <div className='text-muted-foreground py-8 text-center'>
+                  <UserPlus className='mx-auto mb-4 h-12 w-12 opacity-50' />
                   <p>No pending invitations</p>
-                  {search && <p className='text-sm mt-2'>Try adjusting your search</p>}
+                  {search && (
+                    <p className='mt-2 text-sm'>Try adjusting your search</p>
+                  )}
                 </div>
               ) : (
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
+                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
                   {filteredInvites.map((invite) => (
-                    <Card key={invite.id} className='group hover:shadow-md transition-shadow'>
+                    <Card
+                      key={invite.id}
+                      className='group transition-shadow hover:shadow-md'
+                    >
                       <CardContent className='p-4'>
-                        <div className='flex flex-col items-center text-center space-y-3'>
-                          <Avatar className='h-16 w-16'>
-                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${invite.name}`} />
-                            <AvatarFallback className='text-lg font-semibold bg-gradient-to-br from-primary to-primary/60 text-primary-foreground'>
-                              {invite.name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+                        <div className='flex flex-col items-center space-y-3 text-center'>
+                          <FacelessAvatar
+                            name={invite.name}
+                            seed={invite.id || invite.name}
+                            size={64}
+                          />
                           <div className='w-full'>
-                            <p className='font-medium truncate'>{invite.name}</p>
+                            <p className='truncate font-medium'>
+                              {invite.name}
+                            </p>
                           </div>
-                          <div className='flex flex-col gap-2 w-full'>
-                            <Button 
+                          <div className='flex w-full flex-col gap-2'>
+                            <Button
                               size='sm'
                               disabled={acceptInviteMutation.isPending}
                               onClick={() => handleAcceptInvite(invite.id)}
                               className='w-full'
                             >
-                              <MessageSquare className='h-4 w-4 mr-1' />
+                              <MessageSquare className='mr-1 h-4 w-4' />
                               Accept
                             </Button>
-                            <Button 
-                              variant='outline' 
+                            <Button
+                              variant='outline'
                               size='sm'
                               disabled={declineInviteMutation.isPending}
                               onClick={() => handleDeclineInvite(invite.id)}
                               className='w-full'
                             >
-                              <UserX className='h-4 w-4 mr-1' />
+                              <UserX className='mr-1 h-4 w-4' />
                               Decline
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Friends List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Users className='h-5 w-5' />
+                Friends ({filteredFriends.length})
+              </CardTitle>
+              <CardDescription>Your current friends list</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {filteredFriends.length === 0 ? (
+                <div className='text-muted-foreground py-8 text-center'>
+                  <Users className='mx-auto mb-4 h-12 w-12 opacity-50' />
+                  <p>No friends found</p>
+                  {search && (
+                    <p className='mt-2 text-sm'>Try adjusting your search</p>
+                  )}
+                </div>
+              ) : (
+                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+                  {filteredFriends.map((friend) => (
+                    <Card
+                      key={friend.id}
+                      className='group transition-shadow hover:shadow-md'
+                    >
+                      <CardContent className='p-4'>
+                        <div className='flex flex-col items-center space-y-3 text-center'>
+                          <FacelessAvatar
+                            name={friend.name}
+                            seed={friend.id || friend.name}
+                            size={64}
+                          />
+                          <div className='w-full'>
+                            <p className='truncate font-medium'>
+                              {friend.name}
+                            </p>
+                          </div>
+                          <div className='flex w-full items-center gap-2'>
+                            <Button
+                              variant='outline'
+                              size='sm'
+                              className='flex-1'
+                              disabled={
+                                startChatMutation.isPending &&
+                                pendingChatFriendId === friend.id
+                              }
+                              onClick={() => handleStartChat(friend)}
+                            >
+                              <MessageSquare className='mr-1 h-4 w-4' />
+                              {startChatMutation.isPending &&
+                              pendingChatFriendId === friend.id
+                                ? 'Opening...'
+                                : 'Chat'}
+                            </Button>
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              disabled={removeFriendMutation.isPending}
+                              onClick={() =>
+                                handleRemoveFriend(friend.id, friend.name)
+                              }
+                            >
+                              <UserX className='h-4 w-4' />
                             </Button>
                           </div>
                         </div>
@@ -272,16 +355,14 @@ export function Friends() {
               <AlertDialogTitle>Remove Friend</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to remove{' '}
-                <span className='font-semibold text-foreground'>
+                <span className='text-foreground font-semibold'>
                   {removeFriendDialog.friendName}
                 </span>{' '}
                 from your friends list? This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel
-                disabled={removeFriendMutation.isPending}
-              >
+              <AlertDialogCancel disabled={removeFriendMutation.isPending}>
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
@@ -289,7 +370,9 @@ export function Friends() {
                 disabled={removeFriendMutation.isPending}
                 className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
               >
-                {removeFriendMutation.isPending ? 'Removing...' : 'Remove Friend'}
+                {removeFriendMutation.isPending
+                  ? 'Removing...'
+                  : 'Remove Friend'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
