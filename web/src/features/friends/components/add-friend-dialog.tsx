@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Search, Loader2, UserPlus } from 'lucide-react'
+import { Search, Loader2, UserPlus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useSearchUsersQuery, useCreateFriendMutation } from '@/hooks/useFriends'
@@ -195,12 +195,12 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                         >
                           {isPending ? (
                             <>
-                              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                              <Loader2 className='size-4 animate-spin' />
                               Adding...
                             </>
                           ) : (
                             <>
-                              <UserPlus className='mr-2 h-4 w-4' />
+                              <UserPlus className='size-4' />
                               Add Friend
                             </>
                           )}
@@ -233,6 +233,7 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
             variant='outline'
             onClick={() => onOpenChange(false)}
           >
+            <X className='size-4' />
             Close
           </Button>
         </div>

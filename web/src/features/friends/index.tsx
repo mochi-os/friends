@@ -173,7 +173,7 @@ export function Friends() {
           </div>
           <div className='flex items-center space-x-2'>
             <Button onClick={() => setAddFriendDialogOpen(true)}>
-              <UserPlus className='mr-2 h-4 w-4' />
+              <UserPlus className='size-4' />
               Add Friend
             </Button>
           </div>
@@ -240,7 +240,7 @@ export function Friends() {
                               onClick={() => handleAcceptInvite(invite.id)}
                               className='w-full'
                             >
-                              <MessageSquare className='mr-1 h-4 w-4' />
+                              <MessageSquare className='size-4' />
                               Accept
                             </Button>
                             <Button
@@ -250,7 +250,7 @@ export function Friends() {
                               onClick={() => handleDeclineInvite(invite.id)}
                               className='w-full'
                             >
-                              <UserX className='mr-1 h-4 w-4' />
+                              <UserX className='size-4' />
                               Decline
                             </Button>
                           </div>
@@ -311,7 +311,7 @@ export function Friends() {
                               }
                               onClick={() => handleStartChat(friend)}
                             >
-                              <MessageSquare className='mr-1 h-4 w-4' />
+                              <MessageSquare className='size-4' />
                               {startChatMutation.isPending &&
                               pendingChatFriendId === friend.id
                                 ? 'Opening...'
@@ -325,7 +325,7 @@ export function Friends() {
                                 handleRemoveFriend(friend.id, friend.name)
                               }
                             >
-                              <UserX className='h-4 w-4' />
+                              <UserX className='size-4' />
                             </Button>
                           </div>
                         </div>
