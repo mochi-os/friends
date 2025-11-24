@@ -1,8 +1,11 @@
 {
 	"version": "1.0",
 	"label": "app_name",
-	"engine": {"architecture": "starlark", "version": 2},
-	"files": [ "friends.star" ],
+	"paths": ["friends"],
+	"services": ["friends"],
+
+	"architecture": {"engine": "starlark", "version": 2},
+	"engine": ["friends.star"],
 
 	"database": {
 		"schema": 1,
@@ -11,37 +14,29 @@
 	},
 
 	"icons": [
-		{"path": "friends", "label": "app_name", "icon": "friends.png"}
+		{"action": "", "label": "app_name", "file": "friends.png"}
 	],
 
-	"paths": {
-		"friends": {
-			"actions": {
-				"": {"file": "web/dist/index.html"},
-				"assets": {"files": "web/dist/assets"},
-				"images": {"files": "web/dist/images"},
-				"list": {"function": "action_list"},
-				"accept": {"function": "action_accept"},
-				"create": {"function": "action_create"},
-				"delete": {"function": "action_delete"},
-				"ignore": {"function": "action_ignore"},
-				"new": {"function": "action_new"},
-				"search": {"function": "action_search"}
-			}
-		}
+	"actions": {
+		"": {"file": "web/dist/index.html"},
+		"assets": {"files": "web/dist/assets"},
+		"images": {"files": "web/dist/images"},
+		"list": {"function": "action_list"},
+		"accept": {"function": "action_accept"},
+		"create": {"function": "action_create"},
+		"delete": {"function": "action_delete"},
+		"ignore": {"function": "action_ignore"},
+		"new": {"function": "action_new"},
+		"search": {"function": "action_search"}
 	},
 
-	"services": {
-		"friends": {
-			"events": {
-				"accept": {"function": "event_accept"},
-				"invite": {"function": "event_invite"}
-			},
+	"events": {
+		"accept": {"function": "event_accept"},
+		"invite": {"function": "event_invite"}
+	},
 
-			"functions": {
-				"get": {"function": "function_get"},
-				"list": {"function": "function_list"}
-			}
-		}
+	"functions": {
+		"get": {"function": "function_get"},
+		"list": {"function": "function_list"}
 	}
 }
