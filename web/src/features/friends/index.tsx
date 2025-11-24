@@ -61,11 +61,17 @@ export function Friends() {
       if (!chatId) {
         return
       }
-      const chatBaseUrl =
+      let chatBaseUrl =
         import.meta.env.VITE_APP_CHAT_URL ?? APP_ROUTES.CHAT.HOME
+
+      // Ensure chatBaseUrl ends with a slash before appending search params
+      if (!chatBaseUrl.endsWith('/')) {
+        chatBaseUrl = chatBaseUrl + '/'
+      }
+
       console.log('chatBaseUrl', chatBaseUrl)
       const chatUrl = chatBaseUrl.startsWith('http')
-        ? new URL(chatBaseUrl)
+        ? new URL(chatBaseUrl, undefined)
         : new URL(chatBaseUrl, window.location.origin)
       chatUrl.searchParams.set('chat', chatId)
       console.log('chatUrl', chatUrl)
