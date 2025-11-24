@@ -25,12 +25,12 @@ export const APP_ROUTES = {
   },
   // Home app (future)
   HOME: {
-    BASE: '/home',
+    BASE: '/home/',
     HOME: '/home/',
   },
   // Feeds app (future)
   FEEDS: {
-    BASE: '/feeds',
+    BASE: '/feeds/',
     HOME: '/feeds/',
   },
   // Notifications app

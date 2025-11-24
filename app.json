@@ -5,7 +5,7 @@
 	"services": ["friends"],
 
 	"architecture": {"engine": "starlark", "version": 2},
-	"engine": ["friends.star"],
+	"execute": ["friends.star"],
 
 	"database": {
 		"schema": 1,
