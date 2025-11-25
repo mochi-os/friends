@@ -13,19 +13,6 @@ const LOGIN_COOKIE = 'login'
 const TOKEN_COOKIE = 'token'
 
 /**
- * Extract name from email (part before @)
- * Capitalizes and formats nicely for display
- */
-const extractNameFromEmail = (email: string): string => {
-  const name = email.split('@')[0]
-  // Capitalize first letter and replace dots/underscores with spaces
-  return name
-    .split(/[._-]/)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
-}
-
-/**
  * User information interface
  * Contains user profile data for UI display
  */
@@ -144,7 +131,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         if (decoded?.email) {
           return {
             email: decoded.email,
-            name: decoded.name || profile.name || extractNameFromEmail(decoded.email),
+            name: decoded.name || profile.name,
             ...decoded,
           } as AuthUser
         }
@@ -153,7 +140,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     : initialEmail
       ? {
           email: initialEmail,
-          name: profile.name || extractNameFromEmail(initialEmail),
+          name: profile.name,
         }
       : null
 
@@ -240,10 +227,11 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         if (!get().user) {
           const decoded = decodeJWT(accessToken)
           if (decoded?.email) {
+            const currentProfile = readProfileCookie()
             set({
               user: {
                 email: decoded.email,
-                name: decoded.name || extractNameFromEmail(decoded.email),
+                name: decoded.name || currentProfile.name,
                 ...decoded,
               } as AuthUser,
               accessToken,
@@ -294,13 +282,13 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         const user: AuthUser | null = decoded?.email
           ? ({
               email: decoded.email,
-              name: decoded.name || profile.name || extractNameFromEmail(decoded.email),
+              name: decoded.name || profile.name,
               ...decoded,
             } as AuthUser)
           : cookieEmail // Use stored email if no token
             ? {
                 email: cookieEmail,
-                name: profile.name || extractNameFromEmail(cookieEmail),
+                name: profile.name,
               }
             : get().user // Keep existing user if no token or email
 
