@@ -38,16 +38,18 @@ def action_create(a):
     if not name:
         return json_error("Missing friend name")
 
-    mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
-
     # Only attempt messaging when the friend ID looks like a valid entity.
     # This prevents a 500 error from mochi.message.send when 'id' is not an entity ID.
     valid_id = mochi.valid(id, "entity")
 
+    # Check if there's an existing invitation from them
     if valid_id and mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
+        # They already invited us - accept it by adding as friend
+        mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
         mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
         mochi.db.query("delete from invites where identity=? and id=?", identity, id)
     elif valid_id:
+        # No existing invitation - send them an invitation (don't add as friend yet)
         mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "invite"}, {"name": a.user.identity.name})
         mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'to', ?, ? )", identity, id, name, mochi.time.now())
     # If not a valid entity ID, we skip sending messages but still return success
@@ -93,13 +95,26 @@ def action_new(a):
 
 # Search for friends to add
 def action_search(a):
-    return {"data": {"results": mochi.directory.search("person", a.input("search"), False)}}
+    results = mochi.directory.search("person", a.input("search"), False)
+    
+    # Deduplicate results by ID to ensure each person appears only once
+    seen = {}
+    unique_results = []
+    for result in results:
+        if result["id"] not in seen:
+            seen[result["id"]] = True
+            unique_results.append(result)
+    
+    return {"data": {"results": unique_results}}
 
 def event_accept(e):
     i = mochi.db.row("select * from invites where identity=? and id=? and direction='to'", e.header("to"), e.header("from"))
     if not i:
         return
 
+    # Add them as a friend since they accepted our invitation
+    mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", i["identity"], i["id"], i["name"])
+    
     mochi.db.query("delete from invites where identity=? and id=?", i["identity"], i["id"])
     mochi.service.call("notifications", "create", "friends", "accept", i["id"], i["name"] + " accepted your friend invitation", "/friends")
 
