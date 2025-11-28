@@ -1,6 +1,7 @@
 // feat(auth): implement login-header based auth flow
 // Note: Auth is handled by core app, this service only manages local auth state
 import { useAuthStore } from '@/stores/auth-store'
+import { env } from '@mochi/config/env'
 
 // Type definitions (moved from auth API since it's removed)
 // Note: Must match AuthUser from auth-store.ts
@@ -18,7 +19,7 @@ const devConsole = globalThis.console
  * Log errors in development mode only
  */
 const logError = (context: string, error: unknown) => {
-  if (import.meta.env.DEV) {
+  if (env.debug) {
     devConsole?.error?.(`[Auth Service] ${context}`, error)
   }
 }
@@ -99,7 +100,7 @@ export const logout = async (): Promise<void> => {
   // Clear auth state
   useAuthStore.getState().clearAuth()
   // Redirect to core auth app
-  window.location.href = '/login'
+  window.location.href = env.authLoginUrl
 }
 
 /**

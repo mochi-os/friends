@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { APP_ROUTES } from '@/config/routes'
 import { UserPlus, Users, MessageSquare, UserX } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Friend } from '@/api/types/friends'
@@ -35,6 +34,7 @@ import { Main } from '@/components/layout/main'
 import { NotificationsDropdown } from '@/components/notifications-dropdown'
 import { Search } from '@/components/search'
 import { AddFriendDialog } from './components/add-friend-dialog'
+import { getPath } from '@mochi/config/routes'
 
 export function Friends() {
   const [search, setSearch] = useState('')
@@ -62,7 +62,7 @@ export function Friends() {
         return
       }
       let chatBaseUrl =
-        import.meta.env.VITE_APP_CHAT_URL ?? APP_ROUTES.CHAT.HOME
+        import.meta.env.VITE_APP_CHAT_URL ?? getPath('chat')
 
       // Ensure chatBaseUrl ends with a slash before appending search params
       if (!chatBaseUrl.endsWith('/')) {

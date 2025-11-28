@@ -15,6 +15,7 @@
  */
 
 import Cookies from 'js-cookie'
+import { env } from '@mochi/config/env'
 
 const DEFAULT_MAX_AGE = 60 * 60 * 24 * 7 // 7 days in seconds
 
@@ -93,7 +94,7 @@ export function setCookie(
   const expires = maxAge / (60 * 60 * 24)
 
   // Log warning if HttpOnly is requested (cannot be set via JS)
-  if (httpOnly && import.meta.env.DEV) {
+  if (httpOnly && env.debug) {
     console.warn(
       `[Cookies] HttpOnly flag requested for "${name}" but cannot be set via JavaScript. ` +
       `HttpOnly cookies must be set server-side using Set-Cookie header.`

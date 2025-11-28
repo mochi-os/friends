@@ -3,8 +3,10 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { getCookie } from '@/lib/cookies'
+import { env } from '@mochi/config/env'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_BASE_URL = env.apiBaseUrl
+const isProduction = env.appEnv === 'production'
 
 const devConsole = globalThis.console
 
@@ -12,7 +14,7 @@ const devConsole = globalThis.console
  * Log errors in development mode only
  */
 const logDevError = (message: string, error: unknown) => {
-  if (import.meta.env.DEV) {
+  if (env.debug) {
     devConsole?.error?.(message, error)
   }
 }
@@ -78,7 +80,7 @@ apiClient.interceptors.request.use(
         login.startsWith('Bearer ') ? login : `Bearer ${login}`
 
       // Log auth method in development for debugging
-      if (import.meta.env.DEV) {
+      if (env.debug) {
         devConsole?.log?.(
           `[API Auth] Using Bearer scheme with login credential`
         )
@@ -89,13 +91,13 @@ apiClient.interceptors.request.use(
         token.startsWith('Bearer ') ? token : `Bearer ${token}`
 
       // Log auth method in development for debugging
-      if (import.meta.env.DEV) {
+      if (env.debug) {
         devConsole?.log?.(`[API Auth] Using Bearer scheme (fallback)`)
       }
     }
 
     // Log request in development
-    if (import.meta.env.DEV) {
+    if (env.debug) {
       devConsole?.log?.(`[API] ${config.method?.toUpperCase()} ${config.url}`)
     }
 
@@ -134,7 +136,7 @@ apiClient.interceptors.response.use(
         toast.error(errorData.error || 'An error occurred')
 
         // Log in development
-        if (import.meta.env.DEV) {
+        if (env.debug) {
           devConsole?.error?.(
             `[API] Application error: ${errorData.error} (status: ${errorData.status})`
           )
@@ -142,7 +144,7 @@ apiClient.interceptors.response.use(
       }
     } else {
       // Log successful response in development
-      if (import.meta.env.DEV) {
+      if (env.debug) {
         devConsole?.log?.(
           `[API] ${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`
         )
@@ -162,7 +164,7 @@ apiClient.interceptors.response.use(
 
         // Only show toast and clear auth in production for non-auth endpoints
         // In development, let components handle it to avoid loops
-        if (import.meta.env.PROD) {
+        if (isProduction) {
           const isAuthEndpoint =
             error.config?.url?.includes('/login') ||
             error.config?.url?.includes('/auth') ||

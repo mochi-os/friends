@@ -11,6 +11,7 @@ import type {
   SearchUsersResponse,
 } from '@/api/types/friends'
 import { requestHelpers } from '@/lib/request'
+import { env } from '@mochi/config/env'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object'
@@ -24,7 +25,7 @@ const toNumber = (value: unknown): number | undefined =>
 const devConsole = globalThis.console
 
 const logUnexpectedStructure = (payload: unknown) => {
-  if (import.meta.env.DEV) {
+  if (env.debug) {
     devConsole?.warn?.('[API] friends response shape unexpected', payload)
   }
 }

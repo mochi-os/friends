@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useAuth } from './useAuth'
-import { APP_ROUTES } from '@/config/routes'
+import { env } from '@mochi/config/env'
 
 /**
  * Hook to enforce authentication in components
@@ -30,8 +30,7 @@ export function useRequireAuth() {
     if (isInitialized && !isAuthenticated && !isLoading) {
       // Save current location for redirect after login
       const currentPath = window.location.pathname + window.location.search
-      const authUrl = import.meta.env.VITE_AUTH_URL || APP_ROUTES.CORE.SIGN_IN
-      const redirectUrl = `${authUrl}?redirect=${encodeURIComponent(currentPath)}`
+      const redirectUrl = `${env.authLoginUrl}?redirect=${encodeURIComponent(currentPath)}`
       
       // Use window.location.href for cross-app navigation (full page reload)
       window.location.href = redirectUrl
