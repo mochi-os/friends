@@ -81,12 +81,13 @@ def action_ignore(a):
 
 # List friends
 def action_list(a):
-    # Disable notification clearing for unauthenticated API calls
-    # mochi.service.call("notifications", "clear.app", "friends")
+    identity = a.user.identity.id
+    if not identity:
+        return json_error("Not authenticated", 401)
 
     return {"data": {
-            "friends": mochi.db.query("select * from friends order by name, identity, id"),
-            "invites": mochi.db.query("select * from invites where direction='from' order by updated desc")
+            "friends": mochi.db.query("select * from friends where identity=? order by name, id", identity),
+            "invites": mochi.db.query("select * from invites where identity=? and direction='from' order by updated desc", identity)
     }}
 
 # Add a new friend
@@ -128,8 +129,12 @@ def event_invite(e):
     else:
         mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", e.header("to"), e.header("from"), e.content("name"), mochi.time.now())
 
-def function_get(id):
-    return mochi.db.row("select * from friends where id=?", id)
+def function_get(identity, id):
+    if not identity:
+        return None
+    return mochi.db.row("select * from friends where identity=? and id=?", identity, id)
 
-def function_list():
-    return mochi.db.query("select * from friends order by name, identity, id")
+def function_list(identity):
+    if not identity:
+        return []
+    return mochi.db.query("select * from friends where identity=? order by name, id", identity)
