@@ -1,13 +1,14 @@
+import { APP_ROUTES } from '@/config/routes'
 import {
   AudioWaveform,
   Bell,
   Command,
   GalleryVerticalEnd,
   Home,
+  LayoutTemplate,
   MessagesSquare,
   UserPlus,
 } from 'lucide-react'
-import { APP_ROUTES } from '@/config/routes'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
@@ -58,6 +59,12 @@ export const sidebarData: SidebarData = {
           title: 'Notifications',
           url: APP_ROUTES.NOTIFICATIONS.HOME,
           icon: Bell,
+          external: true,
+        },
+        {
+          title: 'Template',
+          url: APP_ROUTES.TEMPLATE.HOME,
+          icon: LayoutTemplate,
           external: true,
         },
       ],
