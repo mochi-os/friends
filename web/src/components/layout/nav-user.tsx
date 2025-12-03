@@ -8,6 +8,7 @@ import {
   Monitor,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
+import { readProfileCookie } from '@/lib/profile-cookie'
 import useDialogState from '@/hooks/use-dialog-state'
 import { useTheme } from '@/context/theme-provider'
 import { cn } from '@/lib/utils'
@@ -35,12 +36,12 @@ export function NavUser() {
   const [open, setOpen] = useDialogState()
   const { theme, setTheme } = useTheme()
 
-  // Get user from auth store
-  const user = useAuthStore((state) => state.user)
-
-  // Fallback values
-  const displayName = user?.name || 'User'
-  const displayEmail = user?.email || 'user@example.com'
+  // Use email from auth store (Template mirrors core auth cookie shape)
+  const email = useAuthStore((state) => state.email)
+  // Get name from mochi_me cookie
+  const profile = readProfileCookie()
+  const displayName = profile.name || 'User'
+  const displayEmail = email || 'user@example.com'
 
   /* Update theme-color meta tag when theme is updated */
   useEffect(() => {
@@ -83,7 +84,7 @@ export function NavUser() {
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                <Sun /> {' '}
+                  <Sun /> {' '}
                   Theme
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
