@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { APP_ROUTES } from '@/config/routes'
+import { APP_ROUTES } from '@/config/app-routes'
 import { UserPlus, Users, MessageSquare, UserX } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Friend } from '@/api/types/friends'
@@ -319,7 +319,7 @@ export function Friends() {
                             >
                               <MessageSquare className='mr-1 h-4 w-4' />
                               {startChatMutation.isPending &&
-                              pendingChatFriendId === friend.id
+                                pendingChatFriendId === friend.id
                                 ? 'Opening...'
                                 : 'Chat'}
                             </Button>
