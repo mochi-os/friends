@@ -1,5 +1,6 @@
 # Mochi friends app
 # REST-style JSON responses version with default identity for API calls
+# Copyright Alistair Cunningham 2024-2025
 
 def database_create():
     mochi.db.query("create table friends ( identity text not null, id text not null, name text not null, class text not null, primary key ( identity, id ) )")
