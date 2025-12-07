@@ -29,7 +29,6 @@
 		"create": {"function": "action_create"},
 		"delete": {"function": "action_delete"},
 		"ignore": {"function": "action_ignore"},
-		"new": {"function": "action_new"},
 		"search": {"function": "action_search"}
 	},
 
