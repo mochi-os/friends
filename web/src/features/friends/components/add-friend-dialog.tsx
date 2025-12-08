@@ -195,13 +195,13 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                         >
                           {isPending ? (
                             <>
-                              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                               Adding...
+                              <Loader2 className='ml-2 h-4 w-4 animate-spin' />
                             </>
                           ) : (
                             <>
-                              <UserPlus className='mr-2 h-4 w-4' />
                               Add Friend
+                              <UserPlus className='ml-2 h-4 w-4' />
                             </>
                           )}
                         </Button>

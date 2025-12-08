@@ -179,8 +179,8 @@ export function Friends() {
           </div>
           <div className='flex items-center space-x-2'>
             <Button onClick={() => setAddFriendDialogOpen(true)}>
-              <UserPlus className='mr-2 h-4 w-4' />
               Add Friend
+              <UserPlus className='ml-2 h-4 w-4' />
             </Button>
           </div>
         </div>
@@ -246,8 +246,8 @@ export function Friends() {
                               onClick={() => handleAcceptInvite(invite.id)}
                               className='w-full'
                             >
-                              <MessageSquare className='mr-1 h-4 w-4' />
                               Accept
+                              <MessageSquare className='ml-1 h-4 w-4' />
                             </Button>
                             <Button
                               variant='outline'
@@ -256,8 +256,8 @@ export function Friends() {
                               onClick={() => handleDeclineInvite(invite.id)}
                               className='w-full'
                             >
-                              <UserX className='mr-1 h-4 w-4' />
                               Decline
+                              <UserX className='ml-1 h-4 w-4' />
                             </Button>
                           </div>
                         </div>
@@ -317,11 +317,11 @@ export function Friends() {
                               }
                               onClick={() => handleStartChat(friend)}
                             >
-                              <MessageSquare className='mr-1 h-4 w-4' />
                               {startChatMutation.isPending &&
                               pendingChatFriendId === friend.id
                                 ? 'Opening...'
                                 : 'Chat'}
+                              <MessageSquare className='ml-1 h-4 w-4' />
                             </Button>
                             <Button
                               variant='ghost'
