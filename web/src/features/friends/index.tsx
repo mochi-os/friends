@@ -204,7 +204,8 @@ export function Friends() {
                 <UserPlus className='h-5 w-5' />
                 Invitations ({filteredInvites.length})
                 {filteredInvites.length > 0 && (
-                  <Badge variant='secondary' className='ml-2'>
+                  <Badge variant='secondary' className='ml-2 flex items-center gap-1'>
+                    <UserPlus className='h-3 w-3' />
                     {filteredInvites.length}
                   </Badge>
                 )}
