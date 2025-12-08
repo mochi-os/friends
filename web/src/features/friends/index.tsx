@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { APP_ROUTES } from '@/config/routes'
+import { APP_ROUTES } from '@/config/app-routes'
 import { UserPlus, Users, MessageSquare, UserX } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Friend } from '@/api/types/friends'
@@ -204,7 +204,8 @@ export function Friends() {
                 <UserPlus className='h-5 w-5' />
                 Invitations ({filteredInvites.length})
                 {filteredInvites.length > 0 && (
-                  <Badge variant='secondary' className='ml-2'>
+                  <Badge variant='secondary' className='ml-2 flex items-center gap-1'>
+                    <UserPlus className='h-3 w-3' />
                     {filteredInvites.length}
                   </Badge>
                 )}
@@ -318,7 +319,7 @@ export function Friends() {
                               onClick={() => handleStartChat(friend)}
                             >
                               {startChatMutation.isPending &&
-                              pendingChatFriendId === friend.id
+                                pendingChatFriendId === friend.id
                                 ? 'Opening...'
                                 : 'Chat'}
                               <MessageSquare className='ml-1 h-4 w-4' />
