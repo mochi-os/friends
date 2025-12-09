@@ -125,6 +125,7 @@ def event_invite(e):
 		mochi.db.query("delete from invites where identity=? and id=?", e.header("to"), e.header("from"))
 	else:
 		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", e.header("to"), e.header("from"), e.content("name"), mochi.time.now())
+		mochi.service.call("notifications", "create", "friends", "invite", e.header("from"), e.content("name") + " sent you a friend invitation", "/friends")
 
 def function_get(identity, id):
 	if not identity:
