@@ -13,7 +13,7 @@ import {
   ResponsiveDialogDescription,
 } from '@/components/ui/responsive-dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+// import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { buildAvatarUrl } from '../utils/avatar'
 
@@ -91,10 +91,10 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
         <div className='flex min-h-0 flex-1 flex-col gap-4 px-6 py-4'>
           {/* Search Input */}
           <div className='space-y-2'>
-            <Label className='flex items-center gap-1.5 text-sm font-medium'>
+            {/* <Label className='flex items-center gap-1.5 text-sm font-medium'>
               <Search className='h-4 w-4' />
               Search Users
-            </Label>
+            </Label> */}
             <div className='relative'>
               <Search className='text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform' />
               <Input
@@ -114,7 +114,7 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
 
           {/* Results List */}
           <ScrollArea className='flex-1 rounded-lg border'>
-            <div className='p-2 min-h-[300px]'>
+            <div className='p-2 min-h-[250px] h-[15rem]'>
               {!showResults && (
                 <div className='flex flex-col items-center justify-center py-12 text-center'>
                   <UserPlus className='text-muted-foreground mb-3 h-12 w-12 opacity-50' />
