@@ -17,7 +17,7 @@
 	},
 
 	"icons": [
-		{"action": "", "label": "app_name", "file": "friends.png"}
+		{"action": "", "label": "app_name", "file": "images/icon.svg"}
 	],
 
 	"actions": {
