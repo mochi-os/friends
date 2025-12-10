@@ -30,10 +30,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { FacelessAvatar } from '@/components/faceless-avatar'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { NotificationsDropdown } from '@/components/notifications-dropdown'
-import { Search } from '@/components/search'
 import { AddFriendDialog } from './components/add-friend-dialog'
 
 export function Friends() {
@@ -147,10 +144,6 @@ export function Friends() {
   if (isLoading && !friendsData) {
     return (
       <>
-        <Header>
-          <Search />
-          <div className='ms-auto flex items-center space-x-4'></div>
-        </Header>
         <Main>
           <div className='flex h-64 items-center justify-center'>
             <div className='text-muted-foreground'>Loading friends...</div>
@@ -162,12 +155,7 @@ export function Friends() {
 
   return (
     <>
-      <Header>
-        <Search />
-        <div className='ms-auto flex items-center space-x-4'>
-          <NotificationsDropdown />
-        </div>
-      </Header>
+
 
       <Main>
         <div className='mb-6 flex items-center justify-between space-y-2'>
