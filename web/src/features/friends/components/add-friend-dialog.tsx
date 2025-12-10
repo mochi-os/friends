@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 // import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { buildAvatarUrl } from '../utils/avatar'
+import { FRIENDS_STRINGS } from '../constants'
 
 type AddFriendDialogProps = {
   open: boolean
@@ -41,14 +42,14 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
 
   const createFriendMutation = useCreateFriendMutation({
     onSuccess: (_, variables) => {
-      toast.success('Friend added successfully!', {
+      toast.success(FRIENDS_STRINGS.SUCCESS_FRIEND_ADDED, {
         description: `${variables.name} has been added to your friends list.`,
       })
     },
     onError: (error) => {
-      toast.error('Failed to add friend', {
+      toast.error(FRIENDS_STRINGS.ERR_ADD_FRIEND, {
         description:
-          error instanceof Error ? error.message : 'Please try again.',
+          error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_GENERIC,
       })
     },
   })
@@ -81,10 +82,10 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
       <ResponsiveDialogContent className='flex max-h-[85vh] flex-col gap-0 p-0 sm:max-w-[600px]'>
         <ResponsiveDialogHeader className='border-b px-6 pt-6 pb-4'>
           <ResponsiveDialogTitle className='text-2xl font-semibold'>
-            Add Friend
+            {FRIENDS_STRINGS.ADD_FRIEND_DIALOG_TITLE}
           </ResponsiveDialogTitle>
           <ResponsiveDialogDescription className='text-muted-foreground mt-1 text-sm'>
-            Search for users by name to add them as friends
+            {FRIENDS_STRINGS.ADD_FRIEND_DIALOG_DESC}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
@@ -98,7 +99,7 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
             <div className='relative'>
               <Search className='text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform' />
               <Input
-                placeholder='Enter name to search...'
+                placeholder={FRIENDS_STRINGS.SEARCH_USERS_PLACEHOLDER}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className='h-10 pl-9'
@@ -107,7 +108,7 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
             </div>
             {searchQuery.length > 0 && searchQuery.length < 2 && (
               <p className='text-muted-foreground text-xs'>
-                Type at least 2 characters to search
+                {FRIENDS_STRINGS.SEARCH_MIN_CHARS}
               </p>
             )}
           </div>
@@ -119,10 +120,10 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                 <div className='flex flex-col items-center justify-center py-12 text-center'>
                   <UserPlus className='text-muted-foreground mb-3 h-12 w-12 opacity-50' />
                   <p className='text-muted-foreground text-sm font-medium'>
-                    Start typing to search for users
+                    {FRIENDS_STRINGS.SEARCH_PROMPT_TITLE}
                   </p>
                   <p className='text-muted-foreground mt-1 text-xs'>
-                    Enter a name to find people you want to add
+                    {FRIENDS_STRINGS.SEARCH_PROMPT_DESC}
                   </p>
                 </div>
               )}
@@ -136,10 +137,10 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
               {isError && showResults && (
                 <div className='flex flex-col items-center justify-center py-12 text-center'>
                   <p className='text-destructive mb-1 text-sm font-medium'>
-                    Failed to search users
+                    {FRIENDS_STRINGS.ERR_SEARCH_FAILED}
                   </p>
                   <p className='text-muted-foreground text-xs'>
-                    {error instanceof Error ? error.message : 'Unknown error'}
+                    {error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_UNKNOWN}
                   </p>
                 </div>
               )}
@@ -148,10 +149,10 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                 <div className='flex flex-col items-center justify-center py-12 text-center'>
                   <Search className='text-muted-foreground mb-3 h-12 w-12 opacity-50' />
                   <p className='text-muted-foreground text-sm font-medium'>
-                    No users found
+                    {FRIENDS_STRINGS.NO_USERS_FOUND}
                   </p>
                   <p className='text-muted-foreground mt-1 text-xs'>
-                    Try a different search term
+                    {FRIENDS_STRINGS.TRY_DIFFERENT_TERM}
                   </p>
                 </div>
               )}
@@ -195,12 +196,12 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                         >
                           {isPending ? (
                             <>
-                              Adding...
+                              {FRIENDS_STRINGS.ADDING}
                               <Loader2 className='ml-2 h-4 w-4 animate-spin' />
                             </>
                           ) : (
                             <>
-                              Add Friend
+                              {FRIENDS_STRINGS.ADD_FRIEND}
                               <UserPlus className='ml-2 h-4 w-4' />
                             </>
                           )}
@@ -221,19 +222,19 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                 <span className='text-foreground font-medium'>
                   {users.length}
                 </span>{' '}
-                {users.length === 1 ? 'user' : 'users'} found
+                {users.length === 1 ? FRIENDS_STRINGS.USER : FRIENDS_STRINGS.USERS} {FRIENDS_STRINGS.FOUND}
               </span>
             ) : debouncedQuery.length > 0 ? (
-              <span>No users found</span>
+              <span>{FRIENDS_STRINGS.NO_USERS_FOUND}</span>
             ) : (
-              <span>Enter a name to search</span>
+              <span>{FRIENDS_STRINGS.ENTER_NAME_TO_SEARCH}</span>
             )}
           </div>
           <Button
             variant='outline'
             onClick={() => onOpenChange(false)}
           >
-            Close
+            {FRIENDS_STRINGS.CLOSE}
           </Button>
         </div>
       </ResponsiveDialogContent>

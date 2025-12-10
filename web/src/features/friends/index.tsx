@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { APP_ROUTES } from '@/config/app-routes'
-import { UserPlus, Users, MessageSquare, UserX } from 'lucide-react'
+import { UserPlus, Users, MessageSquare, UserX, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Friend } from '@/api/types/friends'
 import { useCreateChatMutation } from '@/hooks/useChats'
@@ -29,9 +29,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { FacelessAvatar } from '@/components/faceless-avatar'
 import { Main } from '@/components/layout/main'
 import { AddFriendDialog } from './components/add-friend-dialog'
+import { FRIENDS_STRINGS } from './constants'
 
 export function Friends() {
   const [search, setSearch] = useState('')
@@ -44,15 +46,15 @@ export function Friends() {
   const [pendingChatFriendId, setPendingChatFriendId] = useState<string | null>(
     null
   )
-  const { data: friendsData, isLoading } = useFriendsQuery()
+  const { data: friendsData, isLoading, isError, error } = useFriendsQuery()
   const acceptInviteMutation = useAcceptFriendInviteMutation()
   const declineInviteMutation = useDeclineFriendInviteMutation()
   const removeFriendMutation = useRemoveFriendMutation()
   const startChatMutation = useCreateChatMutation({
     onSuccess: (data) => {
       setPendingChatFriendId(null)
-      toast.success('Chat ready', {
-        description: 'Redirecting you to the conversation.',
+      toast.success(FRIENDS_STRINGS.SUCCESS_CHAT_READY, {
+        description: FRIENDS_STRINGS.SUCCESS_REDIRECTING,
       })
       const chatId = data.id
       if (!chatId) {
@@ -81,8 +83,8 @@ export function Friends() {
     onError: (error) => {
       setPendingChatFriendId(null)
       const description =
-        error instanceof Error ? error.message : 'Please try again.'
-      toast.error('Unable to start chat', { description })
+        error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_GENERIC
+      toast.error(FRIENDS_STRINGS.ERR_START_CHAT, { description })
     },
   })
 
@@ -130,8 +132,8 @@ export function Friends() {
 
     const chatName = friend.name?.trim()
     if (!chatName) {
-      toast.error('Unable to start chat', {
-        description: 'Friend name is missing. Please try again later.',
+      toast.error(FRIENDS_STRINGS.ERR_START_CHAT, {
+        description: FRIENDS_STRINGS.ERR_MISSING_NAME,
       })
       return
     }
@@ -141,33 +143,19 @@ export function Friends() {
     startChatMutation.mutate({ participantIds: [friend.id], name: chatName })
   }
 
-  if (isLoading && !friendsData) {
-    return (
-      <>
-        <Main>
-          <div className='flex h-64 items-center justify-center'>
-            <div className='text-muted-foreground'>Loading friends...</div>
-          </div>
-        </Main>
-      </>
-    )
-  }
-
   return (
     <>
-
-
       <Main>
         <div className='mb-6 flex items-center justify-between space-y-2'>
           <div>
-            <h1 className='text-2xl font-bold tracking-tight'>Friends</h1>
+            <h1 className='text-2xl font-bold tracking-tight'>{FRIENDS_STRINGS.PAGE_TITLE}</h1>
             <p className='text-muted-foreground'>
-              Manage your friends and invitations
+              {FRIENDS_STRINGS.PAGE_DESCRIPTION}
             </p>
           </div>
           <div className='flex items-center space-x-2'>
             <Button onClick={() => setAddFriendDialogOpen(true)}>
-              Add Friend
+              {FRIENDS_STRINGS.ADD_FRIEND}
               <UserPlus className='ml-2 h-4 w-4' />
             </Button>
           </div>
@@ -177,7 +165,7 @@ export function Friends() {
         <div className='mb-6'>
           <input
             type='text'
-            placeholder='Search friends...'
+            placeholder={FRIENDS_STRINGS.SEARCH_FRIENDS_PLACEHOLDER}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className='border-border bg-background focus:ring-ring w-full max-w-sm rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none'
@@ -190,23 +178,50 @@ export function Friends() {
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
                 <UserPlus className='h-5 w-5' />
-                Invitations ({filteredInvites.length})
-                {filteredInvites.length > 0 && (
+                {FRIENDS_STRINGS.INVITATIONS_TITLE} {isLoading ? '' : `(${filteredInvites.length})`}
+                {!isLoading && filteredInvites.length > 0 && (
                   <Badge variant='secondary' className='ml-2 flex items-center gap-1'>
                     <UserPlus className='h-3 w-3' />
                     {filteredInvites.length}
                   </Badge>
                 )}
               </CardTitle>
-              <CardDescription>Pending friend requests</CardDescription>
+              <CardDescription>{FRIENDS_STRINGS.INVITATIONS_DESCRIPTION}</CardDescription>
             </CardHeader>
             <CardContent>
-              {filteredInvites.length === 0 ? (
+              {isLoading ? (
+                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className='p-4'>
+                        <div className='flex flex-col items-center space-y-3'>
+                          <Skeleton className='h-16 w-16 rounded-full' />
+                          <div className='w-full space-y-2'>
+                            <Skeleton className='mx-auto h-4 w-24' />
+                            <div className='flex gap-2'>
+                              <Skeleton className='h-8 w-full' />
+                              <Skeleton className='h-8 w-full' />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : isError ? (
+                <div className='text-destructive flex flex-col items-center justify-center py-8 text-center'>
+                  <AlertCircle className='mx-auto mb-4 h-12 w-12 opacity-50' />
+                  <p className='font-medium'>{FRIENDS_STRINGS.ERR_LOAD_INVITATIONS}</p>
+                  <p className='text-muted-foreground mt-1 text-sm'>
+                    {error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_GENERIC}
+                  </p>
+                </div>
+              ) : filteredInvites.length === 0 ? (
                 <div className='text-muted-foreground py-8 text-center'>
                   <UserPlus className='mx-auto mb-4 h-12 w-12 opacity-50' />
-                  <p>No pending invitations</p>
+                  <p>{FRIENDS_STRINGS.NO_INVITATIONS}</p>
                   {search && (
-                    <p className='mt-2 text-sm'>Try adjusting your search</p>
+                    <p className='mt-2 text-sm'>{FRIENDS_STRINGS.ADJUST_SEARCH}</p>
                   )}
                 </div>
               ) : (
@@ -235,7 +250,7 @@ export function Friends() {
                               onClick={() => handleAcceptInvite(invite.id)}
                               className='w-full'
                             >
-                              Accept
+                              {FRIENDS_STRINGS.ACCEPT}
                               <MessageSquare className='ml-1 h-4 w-4' />
                             </Button>
                             <Button
@@ -245,7 +260,7 @@ export function Friends() {
                               onClick={() => handleDeclineInvite(invite.id)}
                               className='w-full'
                             >
-                              Decline
+                              {FRIENDS_STRINGS.DECLINE}
                               <UserX className='ml-1 h-4 w-4' />
                             </Button>
                           </div>
@@ -263,17 +278,44 @@ export function Friends() {
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
                 <Users className='h-5 w-5' />
-                Friends ({filteredFriends.length})
+                {FRIENDS_STRINGS.FRIENDS_LIST_TITLE} {isLoading ? '' : `(${filteredFriends.length})`}
               </CardTitle>
-              <CardDescription>Your current friends list</CardDescription>
+              <CardDescription>{FRIENDS_STRINGS.FRIENDS_LIST_DESCRIPTION}</CardDescription>
             </CardHeader>
             <CardContent>
-              {filteredFriends.length === 0 ? (
+              {isLoading ? (
+                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className='p-4'>
+                        <div className='flex flex-col items-center space-y-3'>
+                          <Skeleton className='h-16 w-16 rounded-full' />
+                          <div className='w-full space-y-2'>
+                            <Skeleton className='mx-auto h-4 w-24' />
+                            <div className='flex gap-2'>
+                              <Skeleton className='h-8 w-full' />
+                              <Skeleton className='h-8 w-full' />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : isError ? (
+                <div className='text-destructive flex flex-col items-center justify-center py-8 text-center'>
+                  <AlertCircle className='mx-auto mb-4 h-12 w-12 opacity-50' />
+                  <p className='font-medium'>{FRIENDS_STRINGS.ERR_LOAD_FRIENDS}</p>
+                  <p className='text-muted-foreground mt-1 text-sm'>
+                    {error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_GENERIC}
+                  </p>
+                </div>
+              ) : filteredFriends.length === 0 ? (
                 <div className='text-muted-foreground py-8 text-center'>
                   <Users className='mx-auto mb-4 h-12 w-12 opacity-50' />
-                  <p>No friends found</p>
+                  <p>{FRIENDS_STRINGS.NO_FRIENDS}</p>
                   {search && (
-                    <p className='mt-2 text-sm'>Try adjusting your search</p>
+                    <p className='mt-2 text-sm'>{FRIENDS_STRINGS.ADJUST_SEARCH}</p>
                   )}
                 </div>
               ) : (
@@ -307,9 +349,9 @@ export function Friends() {
                               onClick={() => handleStartChat(friend)}
                             >
                               {startChatMutation.isPending &&
-                                pendingChatFriendId === friend.id
-                                ? 'Opening...'
-                                : 'Chat'}
+                              pendingChatFriendId === friend.id
+                                ? FRIENDS_STRINGS.OPENING_CHAT
+                                : FRIENDS_STRINGS.CHAT}
                               <MessageSquare className='ml-1 h-4 w-4' />
                             </Button>
                             <Button
@@ -347,18 +389,18 @@ export function Friends() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove Friend</AlertDialogTitle>
+              <AlertDialogTitle>{FRIENDS_STRINGS.REMOVE_FRIEND_DIALOG_TITLE}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to remove{' '}
+                {FRIENDS_STRINGS.REMOVE_FRIEND_CONFIRM_PRE}{' '}
                 <span className='text-foreground font-semibold'>
                   {removeFriendDialog.friendName}
                 </span>{' '}
-                from your friends list? This action cannot be undone.
+                {FRIENDS_STRINGS.REMOVE_FRIEND_CONFIRM_POST}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={removeFriendMutation.isPending}>
-                Cancel
+                {FRIENDS_STRINGS.CANCEL}
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmRemoveFriend}
@@ -366,8 +408,8 @@ export function Friends() {
                 className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
               >
                 {removeFriendMutation.isPending
-                  ? 'Removing...'
-                  : 'Remove Friend'}
+                  ? FRIENDS_STRINGS.REMOVING
+                  : FRIENDS_STRINGS.REMOVE_FRIEND}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
