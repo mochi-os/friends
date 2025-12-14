@@ -1,9 +1,9 @@
 import { Outlet } from '@tanstack/react-router'
 
-import { LayoutProvider } from '@/context/layout-provider'
-import { SearchProvider } from '@/context/search-provider'
+import { LayoutProvider } from '@mochi/common'
+import { SearchProvider } from '@mochi/common'
 
-import { TopBar } from '@/components/layout/top-bar'
+import { TopBar } from '@mochi/common'
 
 type AuthenticatedLayoutProps = {
   children?: React.ReactNode

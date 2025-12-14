@@ -19,18 +19,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+} from '@mochi/common'
+import { Badge } from '@mochi/common'
+import { Button } from '@mochi/common'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@mochi/common'
 import { FacelessAvatar } from '@/components/faceless-avatar'
-import { Main } from '@/components/layout/main'
+import { Main } from '@mochi/common'
 import { AddFriendDialog } from './components/add-friend-dialog'
 
 export function Friends() {

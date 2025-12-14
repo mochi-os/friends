@@ -10,7 +10,7 @@ import type {
   MutationSuccessResponse,
   SearchUsersResponse,
 } from '@/api/types/friends'
-import { requestHelpers } from '@/lib/request'
+import { requestHelpers } from '@mochi/common'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object'
