@@ -16,7 +16,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     <SearchProvider>
       <LayoutProvider>
         <div className="flex h-svh flex-col">
-          <TopBar />
+          <TopBar title="Friends" />
           <main className="flex-1 overflow-auto">
             {children ?? <Outlet />}
           </main>
