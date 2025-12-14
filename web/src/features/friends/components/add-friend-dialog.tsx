@@ -41,12 +41,12 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
 
   const createFriendMutation = useCreateFriendMutation({
     onSuccess: (_, variables) => {
-      toast.success('Friend added successfully!', {
-        description: `${variables.name} has been added to your friends list.`,
+      toast.success('Friend request sent', {
+        description: `A friend request has been sent to ${variables.name}.`,
       })
     },
     onError: (error) => {
-      toast.error('Failed to add friend', {
+      toast.error('Failed to send friend request', {
         description:
           error instanceof Error ? error.message : 'Please try again.',
       })

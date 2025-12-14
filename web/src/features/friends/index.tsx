@@ -44,7 +44,7 @@ export function Friends() {
   const [pendingChatFriendId, setPendingChatFriendId] = useState<string | null>(
     null
   )
-  const { data: friendsData, isLoading } = useFriendsQuery()
+  const { data: friendsData, isLoading, isError, error } = useFriendsQuery()
   const acceptInviteMutation = useAcceptFriendInviteMutation()
   const declineInviteMutation = useDeclineFriendInviteMutation()
   const removeFriendMutation = useRemoveFriendMutation()
@@ -141,15 +141,26 @@ export function Friends() {
     startChatMutation.mutate({ participantIds: [friend.id], name: chatName })
   }
 
+  if (isError) {
+    return (
+      <Main>
+        <div className='flex h-64 flex-col items-center justify-center gap-2'>
+          <div className='text-destructive font-medium'>Failed to load friends</div>
+          <div className='text-muted-foreground text-sm'>
+            {error instanceof Error ? error.message : 'Unknown error'}
+          </div>
+        </div>
+      </Main>
+    )
+  }
+
   if (isLoading && !friendsData) {
     return (
-      <>
-        <Main>
-          <div className='flex h-64 items-center justify-center'>
-            <div className='text-muted-foreground'>Loading friends...</div>
-          </div>
-        </Main>
-      </>
+      <Main>
+        <div className='flex h-64 items-center justify-center'>
+          <div className='text-muted-foreground'>Loading friends...</div>
+        </div>
+      </Main>
     )
   }
 
