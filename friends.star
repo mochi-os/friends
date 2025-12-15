@@ -98,9 +98,6 @@ def action_ignore(a):
 # List friends
 def action_list(a):
 	identity = a.user.identity.id
-	if not identity:
-		return json_error("Not authenticated", 401)
-
 	return {"data": {
 		"friends": mochi.db.query("select * from friends where identity=? order by name, id", identity),
 		"received": mochi.db.query("select * from invites where identity=? and direction='from' order by updated desc", identity),
@@ -137,15 +134,16 @@ def event_accept(e):
 	mochi.service.call("notifications", "create", "friends", "accept", i["id"], i["name"] + " accepted your friend invitation", "/friends")
 
 def event_invite(e):
-	if not mochi.valid(e.content("name"), "line"):
+	name = e.content("name")
+	if not mochi.valid(name, "line") or len(name) > 255:
 		return
 
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", e.header("to"), e.header("from")):
 		mochi.message.send({"from": e.header("to"), "to": e.header("from"), "service": "friends", "event": "accept"})
 		mochi.db.query("delete from invites where identity=? and id=?", e.header("to"), e.header("from"))
 	else:
-		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", e.header("to"), e.header("from"), e.content("name"), mochi.time.now())
-		mochi.service.call("notifications", "create", "friends", "invite", e.header("from"), e.content("name") + " sent you a friend invitation", "/friends")
+		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", e.header("to"), e.header("from"), name, mochi.time.now())
+		mochi.service.call("notifications", "create", "friends", "invite", e.header("from"), name + " sent you a friend invitation", "/friends")
 
 def event_cancel(e):
 	# Remove the invitation from the recipient's side
