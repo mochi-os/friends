@@ -29,7 +29,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@mochi/common'
-import { FacelessAvatar } from '@/components/faceless-avatar'
+import { FacelessAvatar } from '@mochi/common'
 import { Main } from '@mochi/common'
 import { AddFriendDialog } from './components/add-friend-dialog'
 
