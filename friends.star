@@ -7,6 +7,7 @@ def database_create():
 	mochi.db.query("create index friends_id on friends( id )")
 	mochi.db.query("create index friends_name on friends( name )")
 	mochi.db.query("create table invites ( identity text not null, id text not null, direction text not null, name text not null, updated integer not null, primary key ( identity, id, direction ) )")
+	mochi.db.query("create index invites_identity_id on invites( identity, id )")
 	mochi.db.query("create index invites_direction on invites( direction )")
 
 def json_error(message, code=400):
@@ -18,6 +19,8 @@ def action_accept(a):
 	id = a.input("id")
 	if not id:
 		return json_error("Missing friend ID")
+	if not mochi.valid(id, "entity"):
+		return json_error("Invalid friend ID format")
 
 	i = mochi.db.row("select * from invites where identity=? and id=? and direction='from'", identity, id)
 	if not i:
@@ -35,25 +38,29 @@ def action_create(a):
 	id = a.input("id")
 	if not id:
 		return json_error("Missing friend ID")
+	if not mochi.valid(id, "entity"):
+		return json_error("Invalid friend ID format")
+	if id == identity:
+		return json_error("Cannot add yourself as a friend")
+
 	name = a.input("name")
 	if not name:
 		return json_error("Missing friend name")
-
-	# Only attempt messaging when the friend ID looks like a valid entity.
-	# This prevents a 500 error from mochi.message.send when 'id' is not an entity ID.
-	valid_id = mochi.valid(id, "entity")
+	if not mochi.valid(name, "line"):
+		return json_error("Invalid friend name")
+	if len(name) > 255:
+		return json_error("Friend name too long")
 
 	# Check if there's an existing invitation from them
-	if valid_id and mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
+	if mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
 		# They already invited us - accept it by adding as friend
 		mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
 		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
 		mochi.db.query("delete from invites where identity=? and id=?", identity, id)
-	elif valid_id:
+	else:
 		# No existing invitation - send them an invitation (don't add as friend yet)
 		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "invite"}, {"name": a.user.identity.name})
 		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'to', ?, ? )", identity, id, name, mochi.time.now())
-	# If not a valid entity ID, we skip sending messages but still return success
 
 	return {"data": {}}
 
@@ -63,6 +70,8 @@ def action_delete(a):
 	id = a.input("id")
 	if not id:
 		return json_error("Missing friend ID")
+	if not mochi.valid(id, "entity"):
+		return json_error("Invalid friend ID format")
 
 	# Check if this is a sent invitation that needs to be cancelled on the other side
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", identity, id):
@@ -79,6 +88,8 @@ def action_ignore(a):
 	id = a.input("id")
 	if not id:
 		return json_error("Missing friend ID")
+	if not mochi.valid(id, "entity"):
+		return json_error("Invalid friend ID format")
 
 	mochi.db.query("delete from invites where identity=? and id=? and direction='from'", identity, id)
 
@@ -98,7 +109,11 @@ def action_list(a):
 
 # Search for friends to add
 def action_search(a):
-	results = mochi.directory.search("person", a.input("search"), False)
+	search = a.input("search", "").strip()
+	if len(search) > 100:
+		return json_error("Search query too long")
+
+	results = mochi.directory.search("person", search, False)
 
 	# Deduplicate results by ID to ensure each person appears only once
 	seen = {}

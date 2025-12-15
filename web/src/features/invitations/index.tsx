@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { UserPlus, MessageSquare, UserX, Send, Clock, X } from 'lucide-react'
+import { UserPlus, UserX, Send, Clock, X, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   useFriendsQuery,
@@ -170,7 +170,7 @@ export function Invitations() {
                             onClick={() => handleAcceptInvite(invite.id, invite.name)}
                             className='w-full'
                           >
-                            <MessageSquare className='mr-1 h-4 w-4' />
+                            <Check className='mr-1 h-4 w-4' />
                             Accept
                           </Button>
                           <Button

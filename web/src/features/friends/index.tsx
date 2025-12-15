@@ -54,12 +54,10 @@ export function Friends() {
         chatBaseUrl = chatBaseUrl + '/'
       }
 
-      console.log('chatBaseUrl', chatBaseUrl)
       const chatUrl = chatBaseUrl.startsWith('http')
         ? new URL(chatBaseUrl, undefined)
         : new URL(chatBaseUrl, window.location.origin)
       chatUrl.searchParams.set('chat', chatId)
-      console.log('chatUrl', chatUrl)
       /**
        * NOTE: Chat lives in a separate micro-app. Use full-page navigation so the chat app
        * can bootstrap with the selected chat ID.

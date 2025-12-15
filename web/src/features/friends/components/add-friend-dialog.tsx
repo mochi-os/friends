@@ -201,7 +201,7 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                           ) : (
                             <>
                               <UserPlus className='mr-2 h-4 w-4' />
-                              Add Friend
+                              Add friend
                             </>
                           )}
                         </Button>
