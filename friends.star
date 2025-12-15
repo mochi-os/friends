@@ -88,7 +88,8 @@ def action_list(a):
 
 	return {"data": {
 		"friends": mochi.db.query("select * from friends where identity=? order by name, id", identity),
-		"invites": mochi.db.query("select * from invites where identity=? and direction='from' order by updated desc", identity)
+		"received": mochi.db.query("select * from invites where identity=? and direction='from' order by updated desc", identity),
+		"sent": mochi.db.query("select * from invites where identity=? and direction='to' order by updated desc", identity)
 	}}
 
 # Search for friends to add

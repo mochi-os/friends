@@ -6,8 +6,6 @@ import type { Friend } from '@/api/types/friends'
 import { useCreateChatMutation } from '@/hooks/useChats'
 import {
   useFriendsQuery,
-  useAcceptFriendInviteMutation,
-  useDeclineFriendInviteMutation,
   useRemoveFriendMutation,
 } from '@/hooks/useFriends'
 import {
@@ -20,16 +18,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@mochi/common'
-import { Badge } from '@mochi/common'
 import { Button } from '@mochi/common'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@mochi/common'
-import { FacelessAvatar } from '@mochi/common'
+import { Card, CardContent } from '@mochi/common'
 import { Main } from '@mochi/common'
 import { AddFriendDialog } from './components/add-friend-dialog'
 
@@ -45,8 +35,6 @@ export function Friends() {
     null
   )
   const { data: friendsData, isLoading, isError, error } = useFriendsQuery()
-  const acceptInviteMutation = useAcceptFriendInviteMutation()
-  const declineInviteMutation = useDeclineFriendInviteMutation()
   const removeFriendMutation = useRemoveFriendMutation()
   const startChatMutation = useCreateChatMutation({
     onSuccess: (data) => {
@@ -92,21 +80,6 @@ export function Friends() {
       friend.name.toLowerCase().includes(search.toLowerCase())
     )
   }, [friendsData?.friends, search])
-
-  const filteredInvites = useMemo(() => {
-    const list = friendsData?.invites ?? []
-    return list.filter((invite) =>
-      invite.name.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [friendsData?.invites, search])
-
-  const handleAcceptInvite = (friendId: string) => {
-    acceptInviteMutation.mutate({ friendId })
-  }
-
-  const handleDeclineInvite = (friendId: string) => {
-    declineInviteMutation.mutate({ friendId })
-  }
 
   const handleRemoveFriend = (friendId: string, friendName: string) => {
     setRemoveFriendDialog({ open: true, friendId, friendName })
@@ -166,183 +139,80 @@ export function Friends() {
 
   return (
     <>
-
-
       <Main>
         <div className='mb-6 flex items-center justify-between space-y-2'>
-          <div>
-            <h1 className='text-2xl font-bold tracking-tight'>Friends</h1>
-            <p className='text-muted-foreground'>
-              Manage your friends and invitations
-            </p>
-          </div>
-          <div className='flex items-center space-x-2'>
+          <h1 className='text-2xl font-bold tracking-tight'>Friends</h1>
+          <div className='flex items-center gap-2'>
+            <input
+              type='text'
+              placeholder='Search...'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className='border-border bg-background focus:ring-ring w-48 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none'
+            />
             <Button onClick={() => setAddFriendDialogOpen(true)}>
+              <UserPlus className='mr-2 h-4 w-4' />
               Add Friend
-              <UserPlus className='ml-2 h-4 w-4' />
             </Button>
           </div>
         </div>
 
-        {/* Search */}
-        <div className='mb-6'>
-          <input
-            type='text'
-            placeholder='Search friends...'
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className='border-border bg-background focus:ring-ring w-full max-w-sm rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none'
-          />
-        </div>
-
-        <div className='grid gap-6'>
-          {/* Invitations */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <UserPlus className='h-5 w-5' />
-                Invitations ({filteredInvites.length})
-                {filteredInvites.length > 0 && (
-                  <Badge variant='secondary' className='ml-2 flex items-center gap-1'>
-                    <UserPlus className='h-3 w-3' />
-                    {filteredInvites.length}
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>Pending friend requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {filteredInvites.length === 0 ? (
-                <div className='text-muted-foreground py-8 text-center'>
-                  <UserPlus className='mx-auto mb-4 h-12 w-12 opacity-50' />
-                  <p>No pending invitations</p>
-                  {search && (
-                    <p className='mt-2 text-sm'>Try adjusting your search</p>
-                  )}
-                </div>
-              ) : (
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-                  {filteredInvites.map((invite) => (
-                    <Card
-                      key={invite.id}
-                      className='group transition-shadow hover:shadow-md'
-                    >
-                      <CardContent className='p-4'>
-                        <div className='flex flex-col items-center space-y-3 text-center'>
-                          <FacelessAvatar
-                            name={invite.name}
-                            seed={invite.id || invite.name}
-                            size={64}
-                          />
-                          <div className='w-full'>
-                            <p className='truncate font-medium'>
-                              {invite.name}
-                            </p>
-                          </div>
-                          <div className='flex w-full flex-col gap-2'>
-                            <Button
-                              size='sm'
-                              disabled={acceptInviteMutation.isPending}
-                              onClick={() => handleAcceptInvite(invite.id)}
-                              className='w-full'
-                            >
-                              Accept
-                              <MessageSquare className='ml-1 h-4 w-4' />
-                            </Button>
-                            <Button
-                              variant='outline'
-                              size='sm'
-                              disabled={declineInviteMutation.isPending}
-                              onClick={() => handleDeclineInvite(invite.id)}
-                              className='w-full'
-                            >
-                              Decline
-                              <UserX className='ml-1 h-4 w-4' />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Friends List */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Users className='h-5 w-5' />
-                Friends ({filteredFriends.length})
-              </CardTitle>
-              <CardDescription>Your current friends list</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {filteredFriends.length === 0 ? (
-                <div className='text-muted-foreground py-8 text-center'>
-                  <Users className='mx-auto mb-4 h-12 w-12 opacity-50' />
-                  <p>No friends found</p>
-                  {search && (
-                    <p className='mt-2 text-sm'>Try adjusting your search</p>
-                  )}
-                </div>
-              ) : (
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-                  {filteredFriends.map((friend) => (
-                    <Card
-                      key={friend.id}
-                      className='group transition-shadow hover:shadow-md'
-                    >
-                      <CardContent className='p-4'>
-                        <div className='flex flex-col items-center space-y-3 text-center'>
-                          <FacelessAvatar
-                            name={friend.name}
-                            seed={friend.id || friend.name}
-                            size={64}
-                          />
-                          <div className='w-full'>
-                            <p className='truncate font-medium'>
-                              {friend.name}
-                            </p>
-                          </div>
-                          <div className='flex w-full items-center gap-2'>
-                            <Button
-                              variant='outline'
-                              size='sm'
-                              className='flex-1'
-                              disabled={
-                                startChatMutation.isPending &&
-                                pendingChatFriendId === friend.id
-                              }
-                              onClick={() => handleStartChat(friend)}
-                            >
-                              {startChatMutation.isPending &&
-                                pendingChatFriendId === friend.id
-                                ? 'Opening...'
-                                : 'Chat'}
-                              <MessageSquare className='ml-1 h-4 w-4' />
-                            </Button>
-                            <Button
-                              variant='ghost'
-                              size='sm'
-                              disabled={removeFriendMutation.isPending}
-                              onClick={() =>
-                                handleRemoveFriend(friend.id, friend.name)
-                              }
-                            >
-                              <UserX className='h-4 w-4' />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {filteredFriends.length === 0 ? (
+          <div className='text-muted-foreground py-8 text-center'>
+            <Users className='mx-auto mb-4 h-12 w-12 opacity-50' />
+            <p>No friends found</p>
+            {search && (
+              <p className='mt-2 text-sm'>Try adjusting your search</p>
+            )}
+          </div>
+        ) : (
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+            {filteredFriends.map((friend) => (
+              <Card
+                key={friend.id}
+                className='group transition-shadow hover:shadow-md'
+              >
+                <CardContent className='p-4'>
+                  <div className='flex flex-col items-center space-y-3 text-center'>
+                    <div className='w-full'>
+                      <p className='truncate font-medium'>
+                        {friend.name}
+                      </p>
+                    </div>
+                    <div className='flex w-full items-center gap-2'>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        className='flex-1'
+                        disabled={
+                          startChatMutation.isPending &&
+                          pendingChatFriendId === friend.id
+                        }
+                        onClick={() => handleStartChat(friend)}
+                      >
+                        <MessageSquare className='mr-1 h-4 w-4' />
+                        {startChatMutation.isPending &&
+                          pendingChatFriendId === friend.id
+                          ? 'Opening...'
+                          : 'Chat'}
+                      </Button>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        disabled={removeFriendMutation.isPending}
+                        onClick={() =>
+                          handleRemoveFriend(friend.id, friend.name)
+                        }
+                      >
+                        <UserX className='h-4 w-4' />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         <AddFriendDialog
           open={addFriendDialogOpen}

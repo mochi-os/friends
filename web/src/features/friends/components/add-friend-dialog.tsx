@@ -54,8 +54,8 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
   })
 
   const users = useMemo(
-    () => data?.data?.results ?? [],
-    [data?.data?.results]
+    () => data?.results ?? [],
+    [data?.results]
   )
 
   const handleAddFriend = (userId: string, userName: string) => {
@@ -195,13 +195,13 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                         >
                           {isPending ? (
                             <>
+                              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                               Adding...
-                              <Loader2 className='ml-2 h-4 w-4 animate-spin' />
                             </>
                           ) : (
                             <>
+                              <UserPlus className='mr-2 h-4 w-4' />
                               Add Friend
-                              <UserPlus className='ml-2 h-4 w-4' />
                             </>
                           )}
                         </Button>
@@ -214,21 +214,7 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
           </ScrollArea>
         </div>
 
-        <div className='bg-muted/30 flex items-center justify-between gap-3 border-t px-6 py-4'>
-          <div className='text-muted-foreground text-sm'>
-            {users.length > 0 ? (
-              <span>
-                <span className='text-foreground font-medium'>
-                  {users.length}
-                </span>{' '}
-                {users.length === 1 ? 'user' : 'users'} found
-              </span>
-            ) : debouncedQuery.length > 0 ? (
-              <span>No users found</span>
-            ) : (
-              <span>Enter a name to search</span>
-            )}
-          </div>
+        <div className='bg-muted/30 flex items-center justify-end gap-3 border-t px-6 py-4'>
           <Button
             variant='outline'
             onClick={() => onOpenChange(false)}

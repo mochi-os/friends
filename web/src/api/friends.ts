@@ -67,34 +67,30 @@ const normalizeFriendsList = (
   if (Array.isArray(payload)) {
     return {
       friends: payload as Friend[],
-      invites: [],
+      received: [],
+      sent: [],
     }
   }
 
   const record = asRecord(payload)
   if (!record) {
     logUnexpectedStructure(payload)
-    return { friends: [], invites: [] }
+    return { friends: [], received: [], sent: [] }
   }
 
+  // The API returns { data: { friends, received, sent } } but requestHelpers
+  // may or may not unwrap the data envelope. Handle both cases.
   const dataRecord = asRecord(record.data)
+  const source = dataRecord ?? record
 
-  const friends = pickList<Friend>(
-    [record.friends, record.data, record.items, record.results],
-    ['friends', 'data', 'items', 'results']
-  )
-  const invites = pickList<FriendInvite>(
-    [record.invites, record.data, record.items, record.results],
-    ['invites', 'data', 'items', 'results']
-  )
-
-  if (!friends.length && !invites.length) {
-    logUnexpectedStructure(payload)
-  }
+  const friends = Array.isArray(source.friends) ? (source.friends as Friend[]) : []
+  const received = Array.isArray(source.received) ? (source.received as FriendInvite[]) : []
+  const sent = Array.isArray(source.sent) ? (source.sent as FriendInvite[]) : []
 
   return {
     friends,
-    invites,
+    received,
+    sent,
     total: toNumber(record.total) ?? toNumber(dataRecord?.total),
     page: toNumber(record.page) ?? toNumber(dataRecord?.page),
     limit: toNumber(record.limit) ?? toNumber(dataRecord?.limit),
@@ -109,10 +105,16 @@ const listFriends = async (): Promise<GetFriendsListResponse> => {
 }
 
 const searchUsers = async (query: string): Promise<SearchUsersResponse> => {
-  const response = await requestHelpers.get<SearchUsersResponse>(
+  const formData = new URLSearchParams()
+  formData.append('search', query)
+
+  const response = await requestHelpers.post<SearchUsersResponse>(
     endpoints.friends.search,
+    formData.toString(),
     {
-      params: { search: query },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     }
   )
   return response
