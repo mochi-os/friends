@@ -57,12 +57,16 @@ def action_create(a):
 
 	return {"data": {}}
 
-# Delete a friend
+# Delete a friend or cancel a sent invitation
 def action_delete(a):
 	identity = a.user.identity.id
 	id = a.input("id")
 	if not id:
 		return json_error("Missing friend ID")
+
+	# Check if this is a sent invitation that needs to be cancelled on the other side
+	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", identity, id):
+		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "cancel"})
 
 	mochi.db.query("delete from invites where identity=? and id=?", identity, id)
 	mochi.db.query("delete from friends where identity=? and id=?", identity, id)
@@ -127,6 +131,10 @@ def event_invite(e):
 	else:
 		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", e.header("to"), e.header("from"), e.content("name"), mochi.time.now())
 		mochi.service.call("notifications", "create", "friends", "invite", e.header("from"), e.content("name") + " sent you a friend invitation", "/friends")
+
+def event_cancel(e):
+	# Remove the invitation from the recipient's side
+	mochi.db.query("delete from invites where identity=? and id=? and direction='from'", e.header("to"), e.header("from"))
 
 def function_get(identity, id):
 	if not identity:

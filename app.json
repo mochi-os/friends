@@ -34,6 +34,7 @@
 
 	"events": {
 		"accept": {"function": "event_accept"},
+		"cancel": {"function": "event_cancel"},
 		"invite": {"function": "event_invite"}
 	},
 

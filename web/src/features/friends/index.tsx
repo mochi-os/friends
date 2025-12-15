@@ -152,7 +152,7 @@ export function Friends() {
             />
             <Button onClick={() => setAddFriendDialogOpen(true)}>
               <UserPlus className='mr-2 h-4 w-4' />
-              Add Friend
+              Add friend
             </Button>
           </div>
         </div>
