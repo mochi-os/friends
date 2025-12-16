@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { APP_ROUTES } from '@/config/app-routes'
-import { UserPlus, Users, MessageSquare, UserX, AlertCircle } from 'lucide-react'
+import { UserPlus, Users, MessageSquare, UserX } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Friend } from '@/api/types/friends'
 import { useCreateChatMutation } from '@/hooks/useChats'
