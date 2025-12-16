@@ -78,14 +78,23 @@ const normalizeFriendsList = (
     return { friends: [], received: [], sent: [] }
   }
 
-  // The API returns { data: { friends, received, sent } } but requestHelpers
-  // may or may not unwrap the data envelope. Handle both cases.
   const dataRecord = asRecord(record.data)
   const source = dataRecord ?? record
 
   const friends = Array.isArray(source.friends) ? (source.friends as Friend[]) : []
-  const received = Array.isArray(source.received) ? (source.received as FriendInvite[]) : []
-  const sent = Array.isArray(source.sent) ? (source.sent as FriendInvite[]) : []
+  
+let received: FriendInvite[] = []
+  let sent: FriendInvite[] = []
+  
+  if (Array.isArray(source.invites)) {
+    const invites = source.invites as Array<FriendInvite & { direction?: string }>
+    received = invites.filter((invite) => invite.direction === 'from')
+    sent = invites.filter((invite) => invite.direction === 'to')
+  } else {
+    // Fallback to legacy format if received/sent are provided directly
+    received = Array.isArray(source.received) ? (source.received as FriendInvite[]) : []
+    sent = Array.isArray(source.sent) ? (source.sent as FriendInvite[]) : []
+  }
 
   return {
     friends,
