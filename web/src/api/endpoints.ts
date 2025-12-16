@@ -1,11 +1,11 @@
 const endpoints = {
   friends: {
-    list: 'list',
-    search: 'search',
-    create: 'create',
-    accept: 'accept',
-    ignore: 'ignore',
-    delete: 'delete',
+    list: '/friends/list',
+    search: '/friends/search',
+    create: '/friends/create',
+    accept: '/friends/accept',
+    ignore: '/friends/ignore',
+    delete: '/friends/delete',
   },
   chat: {
     list: '/chat/list',
