@@ -10,7 +10,7 @@ import type {
   MutationSuccessResponse,
   SearchUsersResponse,
 } from '@/api/types/friends'
-import { requestHelpers } from '@/lib/request'
+import { requestHelpers } from '@mochi/common'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object'
@@ -67,34 +67,39 @@ const normalizeFriendsList = (
   if (Array.isArray(payload)) {
     return {
       friends: payload as Friend[],
-      invites: [],
+      received: [],
+      sent: [],
     }
   }
 
   const record = asRecord(payload)
   if (!record) {
     logUnexpectedStructure(payload)
-    return { friends: [], invites: [] }
+    return { friends: [], received: [], sent: [] }
   }
 
   const dataRecord = asRecord(record.data)
+  const source = dataRecord ?? record
 
-  const friends = pickList<Friend>(
-    [record.friends, record.data, record.items, record.results],
-    ['friends', 'data', 'items', 'results']
-  )
-  const invites = pickList<FriendInvite>(
-    [record.invites, record.data, record.items, record.results],
-    ['invites', 'data', 'items', 'results']
-  )
-
-  if (!friends.length && !invites.length) {
-    logUnexpectedStructure(payload)
+  const friends = Array.isArray(source.friends) ? (source.friends as Friend[]) : []
+  
+let received: FriendInvite[] = []
+  let sent: FriendInvite[] = []
+  
+  if (Array.isArray(source.invites)) {
+    const invites = source.invites as Array<FriendInvite & { direction?: string }>
+    received = invites.filter((invite) => invite.direction === 'from')
+    sent = invites.filter((invite) => invite.direction === 'to')
+  } else {
+    // Fallback to legacy format if received/sent are provided directly
+    received = Array.isArray(source.received) ? (source.received as FriendInvite[]) : []
+    sent = Array.isArray(source.sent) ? (source.sent as FriendInvite[]) : []
   }
 
   return {
     friends,
-    invites,
+    received,
+    sent,
     total: toNumber(record.total) ?? toNumber(dataRecord?.total),
     page: toNumber(record.page) ?? toNumber(dataRecord?.page),
     limit: toNumber(record.limit) ?? toNumber(dataRecord?.limit),
@@ -109,10 +114,16 @@ const listFriends = async (): Promise<GetFriendsListResponse> => {
 }
 
 const searchUsers = async (query: string): Promise<SearchUsersResponse> => {
-  const response = await requestHelpers.get<SearchUsersResponse>(
+  const formData = new URLSearchParams()
+  formData.append('search', query)
+
+  const response = await requestHelpers.post<SearchUsersResponse>(
     endpoints.friends.search,
+    formData.toString(),
     {
-      params: { search: query },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     }
   )
   return response

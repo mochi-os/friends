@@ -1,20 +1,20 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, Loader2, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@mochi/common'
 import { useSearchUsersQuery, useCreateFriendMutation } from '@/hooks/useFriends'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@mochi/common'
+import { Button } from '@mochi/common'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
   ResponsiveDialogDescription,
-} from '@/components/ui/responsive-dialog'
-import { Input } from '@/components/ui/input'
-// import { Label } from '@/components/ui/label'
-import { ScrollArea } from '@/components/ui/scroll-area'
+} from '@mochi/common'
+import { Input } from '@mochi/common'
+// import { Label } from '@mochi/common'
+import { ScrollArea } from '@mochi/common'
 import { buildAvatarUrl } from '../utils/avatar'
 import { FRIENDS_STRINGS } from '../constants'
 
@@ -55,8 +55,8 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
   })
 
   const users = useMemo(
-    () => data?.data?.results ?? [],
-    [data?.data?.results]
+    () => data?.results ?? [],
+    [data?.results]
   )
 
   const handleAddFriend = (userId: string, userName: string) => {

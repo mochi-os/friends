@@ -6,8 +6,6 @@ import type { Friend } from '@/api/types/friends'
 import { useCreateChatMutation } from '@/hooks/useChats'
 import {
   useFriendsQuery,
-  useAcceptFriendInviteMutation,
-  useDeclineFriendInviteMutation,
   useRemoveFriendMutation,
 } from '@/hooks/useFriends'
 import {
@@ -19,19 +17,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { FacelessAvatar } from '@/components/faceless-avatar'
-import { Main } from '@/components/layout/main'
+} from '@mochi/common'
+import { Button } from '@mochi/common'
+import { Card, CardContent } from '@mochi/common'
+import { Main } from '@mochi/common'
 import { AddFriendDialog } from './components/add-friend-dialog'
 import { FRIENDS_STRINGS } from './constants'
 
@@ -47,8 +36,6 @@ export function Friends() {
     null
   )
   const { data: friendsData, isLoading, isError, error } = useFriendsQuery()
-  const acceptInviteMutation = useAcceptFriendInviteMutation()
-  const declineInviteMutation = useDeclineFriendInviteMutation()
   const removeFriendMutation = useRemoveFriendMutation()
   const startChatMutation = useCreateChatMutation({
     onSuccess: (data) => {
@@ -68,12 +55,10 @@ export function Friends() {
         chatBaseUrl = chatBaseUrl + '/'
       }
 
-      console.log('chatBaseUrl', chatBaseUrl)
       const chatUrl = chatBaseUrl.startsWith('http')
         ? new URL(chatBaseUrl, undefined)
         : new URL(chatBaseUrl, window.location.origin)
       chatUrl.searchParams.set('chat', chatId)
-      console.log('chatUrl', chatUrl)
       /**
        * NOTE: Chat lives in a separate micro-app. Use full-page navigation so the chat app
        * can bootstrap with the selected chat ID.
@@ -94,21 +79,6 @@ export function Friends() {
       friend.name.toLowerCase().includes(search.toLowerCase())
     )
   }, [friendsData?.friends, search])
-
-  const filteredInvites = useMemo(() => {
-    const list = friendsData?.invites ?? []
-    return list.filter((invite) =>
-      invite.name.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [friendsData?.invites, search])
-
-  const handleAcceptInvite = (friendId: string) => {
-    acceptInviteMutation.mutate({ friendId })
-  }
-
-  const handleDeclineInvite = (friendId: string) => {
-    declineInviteMutation.mutate({ friendId })
-  }
 
   const handleRemoveFriend = (friendId: string, friendName: string) => {
     setRemoveFriendDialog({ open: true, friendId, friendName })
@@ -143,237 +113,105 @@ export function Friends() {
     startChatMutation.mutate({ participantIds: [friend.id], name: chatName })
   }
 
+  if (isError) {
+    return (
+      <Main>
+        <div className='flex h-64 flex-col items-center justify-center gap-2'>
+          <div className='text-destructive font-medium'>Failed to load friends</div>
+          <div className='text-muted-foreground text-sm'>
+            {error instanceof Error ? error.message : 'Unknown error'}
+          </div>
+        </div>
+      </Main>
+    )
+  }
+
+  if (isLoading && !friendsData) {
+    return (
+      <Main>
+        <div className='flex h-64 items-center justify-center'>
+          <div className='text-muted-foreground'>Loading friends...</div>
+        </div>
+      </Main>
+    )
+  }
+
   return (
     <>
       <Main>
         <div className='mb-6 flex items-center justify-between space-y-2'>
-          <div>
-            <h1 className='text-2xl font-bold tracking-tight'>{FRIENDS_STRINGS.PAGE_TITLE}</h1>
-            <p className='text-muted-foreground'>
-              {FRIENDS_STRINGS.PAGE_DESCRIPTION}
-            </p>
-          </div>
-          <div className='flex items-center space-x-2'>
+          <h1 className='text-2xl font-bold tracking-tight'>Friends</h1>
+          <div className='flex items-center gap-2'>
+            <input
+              type='text'
+              placeholder='Search...'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className='border-border bg-background focus:ring-ring w-48 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none'
+            />
             <Button onClick={() => setAddFriendDialogOpen(true)}>
-              {FRIENDS_STRINGS.ADD_FRIEND}
-              <UserPlus className='ml-2 h-4 w-4' />
+              <UserPlus className='mr-2 h-4 w-4' />
+              Add friend
             </Button>
           </div>
         </div>
 
-        {/* Search */}
-        <div className='mb-6'>
-          <input
-            type='text'
-            placeholder={FRIENDS_STRINGS.SEARCH_FRIENDS_PLACEHOLDER}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className='border-border bg-background focus:ring-ring w-full max-w-sm rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none'
-          />
-        </div>
-
-        <div className='grid gap-6'>
-          {/* Invitations */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <UserPlus className='h-5 w-5' />
-                {FRIENDS_STRINGS.INVITATIONS_TITLE} {isLoading ? '' : `(${filteredInvites.length})`}
-                {!isLoading && filteredInvites.length > 0 && (
-                  <Badge variant='secondary' className='ml-2 flex items-center gap-1'>
-                    <UserPlus className='h-3 w-3' />
-                    {filteredInvites.length}
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>{FRIENDS_STRINGS.INVITATIONS_DESCRIPTION}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Card key={i}>
-                      <CardContent className='p-4'>
-                        <div className='flex flex-col items-center space-y-3'>
-                          <Skeleton className='h-16 w-16 rounded-full' />
-                          <div className='w-full space-y-2'>
-                            <Skeleton className='mx-auto h-4 w-24' />
-                            <div className='flex gap-2'>
-                              <Skeleton className='h-8 w-full' />
-                              <Skeleton className='h-8 w-full' />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : isError ? (
-                <div className='text-destructive flex flex-col items-center justify-center py-8 text-center'>
-                  <AlertCircle className='mx-auto mb-4 h-12 w-12 opacity-50' />
-                  <p className='font-medium'>{FRIENDS_STRINGS.ERR_LOAD_INVITATIONS}</p>
-                  <p className='text-muted-foreground mt-1 text-sm'>
-                    {error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_GENERIC}
-                  </p>
-                </div>
-              ) : filteredInvites.length === 0 ? (
-                <div className='text-muted-foreground py-8 text-center'>
-                  <UserPlus className='mx-auto mb-4 h-12 w-12 opacity-50' />
-                  <p>{FRIENDS_STRINGS.NO_INVITATIONS}</p>
-                  {search && (
-                    <p className='mt-2 text-sm'>{FRIENDS_STRINGS.ADJUST_SEARCH}</p>
-                  )}
-                </div>
-              ) : (
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-                  {filteredInvites.map((invite) => (
-                    <Card
-                      key={invite.id}
-                      className='group transition-shadow hover:shadow-md'
-                    >
-                      <CardContent className='p-4'>
-                        <div className='flex flex-col items-center space-y-3 text-center'>
-                          <FacelessAvatar
-                            name={invite.name}
-                            seed={invite.id || invite.name}
-                            size={64}
-                          />
-                          <div className='w-full'>
-                            <p className='truncate font-medium'>
-                              {invite.name}
-                            </p>
-                          </div>
-                          <div className='flex w-full flex-col gap-2'>
-                            <Button
-                              size='sm'
-                              disabled={acceptInviteMutation.isPending}
-                              onClick={() => handleAcceptInvite(invite.id)}
-                              className='w-full'
-                            >
-                              {FRIENDS_STRINGS.ACCEPT}
-                              <MessageSquare className='ml-1 h-4 w-4' />
-                            </Button>
-                            <Button
-                              variant='outline'
-                              size='sm'
-                              disabled={declineInviteMutation.isPending}
-                              onClick={() => handleDeclineInvite(invite.id)}
-                              className='w-full'
-                            >
-                              {FRIENDS_STRINGS.DECLINE}
-                              <UserX className='ml-1 h-4 w-4' />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Friends List */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Users className='h-5 w-5' />
-                {FRIENDS_STRINGS.FRIENDS_LIST_TITLE} {isLoading ? '' : `(${filteredFriends.length})`}
-              </CardTitle>
-              <CardDescription>{FRIENDS_STRINGS.FRIENDS_LIST_DESCRIPTION}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <Card key={i}>
-                      <CardContent className='p-4'>
-                        <div className='flex flex-col items-center space-y-3'>
-                          <Skeleton className='h-16 w-16 rounded-full' />
-                          <div className='w-full space-y-2'>
-                            <Skeleton className='mx-auto h-4 w-24' />
-                            <div className='flex gap-2'>
-                              <Skeleton className='h-8 w-full' />
-                              <Skeleton className='h-8 w-full' />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : isError ? (
-                <div className='text-destructive flex flex-col items-center justify-center py-8 text-center'>
-                  <AlertCircle className='mx-auto mb-4 h-12 w-12 opacity-50' />
-                  <p className='font-medium'>{FRIENDS_STRINGS.ERR_LOAD_FRIENDS}</p>
-                  <p className='text-muted-foreground mt-1 text-sm'>
-                    {error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_GENERIC}
-                  </p>
-                </div>
-              ) : filteredFriends.length === 0 ? (
-                <div className='text-muted-foreground py-8 text-center'>
-                  <Users className='mx-auto mb-4 h-12 w-12 opacity-50' />
-                  <p>{FRIENDS_STRINGS.NO_FRIENDS}</p>
-                  {search && (
-                    <p className='mt-2 text-sm'>{FRIENDS_STRINGS.ADJUST_SEARCH}</p>
-                  )}
-                </div>
-              ) : (
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-                  {filteredFriends.map((friend) => (
-                    <Card
-                      key={friend.id}
-                      className='group transition-shadow hover:shadow-md'
-                    >
-                      <CardContent className='p-4'>
-                        <div className='flex flex-col items-center space-y-3 text-center'>
-                          <FacelessAvatar
-                            name={friend.name}
-                            seed={friend.id || friend.name}
-                            size={64}
-                          />
-                          <div className='w-full'>
-                            <p className='truncate font-medium'>
-                              {friend.name}
-                            </p>
-                          </div>
-                          <div className='flex w-full items-center gap-2'>
-                            <Button
-                              variant='outline'
-                              size='sm'
-                              className='flex-1'
-                              disabled={
-                                startChatMutation.isPending &&
-                                pendingChatFriendId === friend.id
-                              }
-                              onClick={() => handleStartChat(friend)}
-                            >
-                              {startChatMutation.isPending &&
-                              pendingChatFriendId === friend.id
-                                ? FRIENDS_STRINGS.OPENING_CHAT
-                                : FRIENDS_STRINGS.CHAT}
-                              <MessageSquare className='ml-1 h-4 w-4' />
-                            </Button>
-                            <Button
-                              variant='ghost'
-                              size='sm'
-                              disabled={removeFriendMutation.isPending}
-                              onClick={() =>
-                                handleRemoveFriend(friend.id, friend.name)
-                              }
-                            >
-                              <UserX className='h-4 w-4' />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {filteredFriends.length === 0 ? (
+          <div className='text-muted-foreground py-8 text-center'>
+            <Users className='mx-auto mb-4 h-12 w-12 opacity-50' />
+            <p>No friends found</p>
+            {search && (
+              <p className='mt-2 text-sm'>Try adjusting your search</p>
+            )}
+          </div>
+        ) : (
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+            {filteredFriends.map((friend) => (
+              <Card
+                key={friend.id}
+                className='group transition-shadow hover:shadow-md'
+              >
+                <CardContent className='p-4'>
+                  <div className='flex flex-col items-center space-y-3 text-center'>
+                    <div className='w-full'>
+                      <p className='truncate font-medium'>
+                        {friend.name}
+                      </p>
+                    </div>
+                    <div className='flex w-full items-center gap-2'>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        className='flex-1'
+                        disabled={
+                          startChatMutation.isPending &&
+                          pendingChatFriendId === friend.id
+                        }
+                        onClick={() => handleStartChat(friend)}
+                      >
+                        <MessageSquare className='mr-1 h-4 w-4' />
+                        {startChatMutation.isPending &&
+                          pendingChatFriendId === friend.id
+                          ? 'Opening...'
+                          : 'Chat'}
+                      </Button>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        disabled={removeFriendMutation.isPending}
+                        onClick={() =>
+                          handleRemoveFriend(friend.id, friend.name)
+                        }
+                      >
+                        <UserX className='h-4 w-4' />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         <AddFriendDialog
           open={addFriendDialogOpen}

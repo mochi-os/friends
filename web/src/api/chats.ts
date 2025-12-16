@@ -1,6 +1,6 @@
 import endpoints from '@/api/endpoints'
 import type { CreateChatRequest, CreateChatResponse } from '@/api/types/chats'
-import { requestHelpers } from '@/lib/request'
+import { requestHelpers } from '@mochi/common'
 
 type CreateChatApiResponse = { data: CreateChatResponse } | CreateChatResponse
 

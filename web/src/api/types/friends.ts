@@ -16,7 +16,8 @@ export type FriendInvite = Friend
 
 export interface FriendsListEnvelope extends PaginationMeta {
   friends?: unknown
-  invites?: unknown
+  received?: unknown
+  sent?: unknown
   data?: unknown
   items?: unknown
   results?: unknown
@@ -27,7 +28,8 @@ export type GetFriendsListRaw = Friend[] | FriendsListEnvelope
 
 export interface GetFriendsListResponse {
   friends: Friend[]
-  invites: FriendInvite[]
+  received: FriendInvite[]
+  sent: FriendInvite[]
   total?: number
   page?: number
   limit?: number
@@ -75,8 +77,6 @@ export interface User {
 }
 
 export interface SearchUsersResponse {
-  data: {
-    results: User[]
-    [key: string]: unknown
-  }
+  results: User[]
+  [key: string]: unknown
 }
