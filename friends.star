@@ -3,12 +3,12 @@
 # Copyright Alistair Cunningham 2024-2025
 
 def database_create():
-	mochi.db.query("create table friends ( identity text not null, id text not null, name text not null, class text not null, primary key ( identity, id ) )")
-	mochi.db.query("create index friends_id on friends( id )")
-	mochi.db.query("create index friends_name on friends( name )")
-	mochi.db.query("create table invites ( identity text not null, id text not null, direction text not null, name text not null, updated integer not null, primary key ( identity, id, direction ) )")
-	mochi.db.query("create index invites_identity_id on invites( identity, id )")
-	mochi.db.query("create index invites_direction on invites( direction )")
+	mochi.db.execute("create table friends ( identity text not null, id text not null, name text not null, class text not null, primary key ( identity, id ) )")
+	mochi.db.execute("create index friends_id on friends( id )")
+	mochi.db.execute("create index friends_name on friends( name )")
+	mochi.db.execute("create table invites ( identity text not null, id text not null, direction text not null, name text not null, updated integer not null, primary key ( identity, id, direction ) )")
+	mochi.db.execute("create index invites_identity_id on invites( identity, id )")
+	mochi.db.execute("create index invites_direction on invites( direction )")
 
 def json_error(message, code=400):
 	return {"status": code, "error": message, "data": {}}
@@ -26,9 +26,9 @@ def action_accept(a):
 	if not i:
 		return json_error("Invitation from friend not found")
 
-	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, i["name"])
+	mochi.db.execute("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, i["name"])
 	mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
-	mochi.db.query("delete from invites where identity=? and id=?", identity, id)
+	mochi.db.execute("delete from invites where identity=? and id=?", identity, id)
 
 	return {"data": {}}
 
@@ -54,13 +54,13 @@ def action_create(a):
 	# Check if there's an existing invitation from them
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
 		# They already invited us - accept it by adding as friend
-		mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
+		mochi.db.execute("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
 		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
-		mochi.db.query("delete from invites where identity=? and id=?", identity, id)
+		mochi.db.execute("delete from invites where identity=? and id=?", identity, id)
 	else:
 		# No existing invitation - send them an invitation (don't add as friend yet)
 		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "invite"}, {"name": a.user.identity.name})
-		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'to', ?, ? )", identity, id, name, mochi.time.now())
+		mochi.db.execute("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'to', ?, ? )", identity, id, name, mochi.time.now())
 
 	return {"data": {}}
 
@@ -77,8 +77,8 @@ def action_delete(a):
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", identity, id):
 		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "cancel"})
 
-	mochi.db.query("delete from invites where identity=? and id=?", identity, id)
-	mochi.db.query("delete from friends where identity=? and id=?", identity, id)
+	mochi.db.execute("delete from invites where identity=? and id=?", identity, id)
+	mochi.db.execute("delete from friends where identity=? and id=?", identity, id)
 
 	return {"data": {}}
 
@@ -91,7 +91,7 @@ def action_ignore(a):
 	if not mochi.valid(id, "entity"):
 		return json_error("Invalid friend ID format")
 
-	mochi.db.query("delete from invites where identity=? and id=? and direction='from'", identity, id)
+	mochi.db.execute("delete from invites where identity=? and id=? and direction='from'", identity, id)
 
 	return {"data": {}}
 
@@ -99,9 +99,9 @@ def action_ignore(a):
 def action_list(a):
 	identity = a.user.identity.id
 	return {"data": {
-		"friends": mochi.db.query("select * from friends where identity=? order by name, id", identity),
-		"received": mochi.db.query("select * from invites where identity=? and direction='from' order by updated desc", identity),
-		"sent": mochi.db.query("select * from invites where identity=? and direction='to' order by updated desc", identity)
+		"friends": mochi.db.rows("select * from friends where identity=? order by name, id", identity),
+		"received": mochi.db.rows("select * from invites where identity=? and direction='from' order by updated desc", identity),
+		"sent": mochi.db.rows("select * from invites where identity=? and direction='to' order by updated desc", identity)
 	}}
 
 # Search for friends to add
@@ -128,9 +128,9 @@ def event_accept(e):
 		return
 
 	# Add them as a friend since they accepted our invitation
-	mochi.db.query("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", i["identity"], i["id"], i["name"])
+	mochi.db.execute("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", i["identity"], i["id"], i["name"])
 
-	mochi.db.query("delete from invites where identity=? and id=?", i["identity"], i["id"])
+	mochi.db.execute("delete from invites where identity=? and id=?", i["identity"], i["id"])
 	mochi.service.call("notifications", "create", "friends", "accept", i["id"], i["name"] + " accepted your friend invitation", "/friends")
 
 def event_invite(e):
@@ -140,14 +140,14 @@ def event_invite(e):
 
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", e.header("to"), e.header("from")):
 		mochi.message.send({"from": e.header("to"), "to": e.header("from"), "service": "friends", "event": "accept"})
-		mochi.db.query("delete from invites where identity=? and id=?", e.header("to"), e.header("from"))
+		mochi.db.execute("delete from invites where identity=? and id=?", e.header("to"), e.header("from"))
 	else:
-		mochi.db.query("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", e.header("to"), e.header("from"), name, mochi.time.now())
+		mochi.db.execute("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", e.header("to"), e.header("from"), name, mochi.time.now())
 		mochi.service.call("notifications", "create", "friends", "invite", e.header("from"), name + " sent you a friend invitation", "/friends")
 
 def event_cancel(e):
 	# Remove the invitation from the recipient's side
-	mochi.db.query("delete from invites where identity=? and id=? and direction='from'", e.header("to"), e.header("from"))
+	mochi.db.execute("delete from invites where identity=? and id=? and direction='from'", e.header("to"), e.header("from"))
 
 def function_get(identity, id):
 	if not identity:
@@ -157,4 +157,4 @@ def function_get(identity, id):
 def function_list(identity):
 	if not identity:
 		return []
-	return mochi.db.query("select * from friends where identity=? order by name, id", identity)
+	return mochi.db.rows("select * from friends where identity=? order by name, id", identity)
