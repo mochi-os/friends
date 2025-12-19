@@ -1,4 +1,4 @@
-import { Users, UserPlus } from 'lucide-react'
+import { Users, User, UsersRound } from 'lucide-react'
 import { type SidebarData } from '@mochi/common'
 
 export const sidebarData: SidebarData = {
@@ -14,7 +14,12 @@ export const sidebarData: SidebarData = {
         {
           title: 'Invitations',
           url: '/invitations',
-          icon: UserPlus,
+          icon: User,
+        },
+        {
+          title: 'Groups',
+          url: '/groups',
+          icon: UsersRound,
         },
       ],
     },

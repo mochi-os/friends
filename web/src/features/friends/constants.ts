@@ -13,7 +13,7 @@ export const FRIENDS_STRINGS = {
   DECLINE: 'Decline',
   CHAT: 'Chat',
   OPENING_CHAT: 'Opening...',
-  REMOVE_FRIEND: 'Remove Friend',
+  REMOVE_FRIEND: 'Remove friend',
   CANCEL: 'Cancel',
   REMOVING: 'Removing...',
   ADDING: 'Adding...',
@@ -47,12 +47,13 @@ export const FRIENDS_STRINGS = {
   // Success
   SUCCESS_CHAT_READY: 'Chat ready',
   SUCCESS_REDIRECTING: 'Redirecting you to the conversation.',
-  SUCCESS_FRIEND_ADDED: 'Friend added successfully!',
+  SUCCESS_INVITATION_SENT: 'Invitation sent',
+  SUCCESS_INVITATION_SENT_DESC: 'A friend invitation has been sent to',
 
   // Dialogs
   ADD_FRIEND_DIALOG_TITLE: 'Add Friend',
   ADD_FRIEND_DIALOG_DESC: 'Search for users by name to add them as friends',
-  REMOVE_FRIEND_DIALOG_TITLE: 'Remove Friend',
+  REMOVE_FRIEND_DIALOG_TITLE: 'Remove friend',
   REMOVE_FRIEND_CONFIRM_PRE: 'Are you sure you want to remove',
   REMOVE_FRIEND_CONFIRM_POST: 'from your friends list? This action cannot be undone.',
 

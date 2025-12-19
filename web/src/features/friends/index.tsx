@@ -243,7 +243,6 @@ export function Friends() {
               <AlertDialogAction
                 onClick={confirmRemoveFriend}
                 disabled={removeFriendMutation.isPending}
-                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
               >
                 {removeFriendMutation.isPending
                   ? FRIENDS_STRINGS.REMOVING

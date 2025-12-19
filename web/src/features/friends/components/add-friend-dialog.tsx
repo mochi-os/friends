@@ -42,8 +42,8 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
 
   const createFriendMutation = useCreateFriendMutation({
     onSuccess: (_, variables) => {
-      toast.success(FRIENDS_STRINGS.SUCCESS_FRIEND_ADDED, {
-        description: `${variables.name} has been added to your friends list.`,
+      toast.success(FRIENDS_STRINGS.SUCCESS_INVITATION_SENT, {
+        description: `${FRIENDS_STRINGS.SUCCESS_INVITATION_SENT_DESC} ${variables.name}.`,
       })
     },
     onError: (error) => {

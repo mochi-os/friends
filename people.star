@@ -27,7 +27,7 @@ def action_accept(a):
 		return json_error("Invitation from friend not found")
 
 	mochi.db.execute("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, i["name"])
-	mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
+	mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "friend/accept"})
 	mochi.db.execute("delete from invites where identity=? and id=?", identity, id)
 
 	return {"data": {}}
@@ -55,11 +55,11 @@ def action_create(a):
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='from'", identity, id):
 		# They already invited us - accept it by adding as friend
 		mochi.db.execute("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", identity, id, name)
-		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "accept"})
+		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "friend/accept"})
 		mochi.db.execute("delete from invites where identity=? and id=?", identity, id)
 	else:
 		# No existing invitation - send them an invitation (don't add as friend yet)
-		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "invite"}, {"name": a.user.identity.name})
+		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "friend/invite"}, {"name": a.user.identity.name})
 		mochi.db.execute("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'to', ?, ? )", identity, id, name, mochi.time.now())
 
 	return {"data": {}}
@@ -75,7 +75,7 @@ def action_delete(a):
 
 	# Check if this is a sent invitation that needs to be cancelled on the other side
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", identity, id):
-		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "cancel"})
+		mochi.message.send({"from": identity, "to": id, "service": "friends", "event": "friend/cancel"})
 
 	mochi.db.execute("delete from invites where identity=? and id=?", identity, id)
 	mochi.db.execute("delete from friends where identity=? and id=?", identity, id)
@@ -131,7 +131,7 @@ def event_accept(e):
 	mochi.db.execute("replace into friends ( identity, id, name, class ) values ( ?, ?, ?, 'person' )", i["identity"], i["id"], i["name"])
 
 	mochi.db.execute("delete from invites where identity=? and id=?", i["identity"], i["id"])
-	mochi.service.call("notifications", "create", "friends", "accept", i["id"], i["name"] + " accepted your friend invitation", "/friends")
+	mochi.service.call("notifications", "create", "friends", "accept", i["id"], i["name"] + " accepted your friend invitation", "/people")
 
 def event_invite(e):
 	name = e.content("name")
@@ -139,11 +139,11 @@ def event_invite(e):
 		return
 
 	if mochi.db.exists("select id from invites where identity=? and id=? and direction='to'", e.header("to"), e.header("from")):
-		mochi.message.send({"from": e.header("to"), "to": e.header("from"), "service": "friends", "event": "accept"})
+		mochi.message.send({"from": e.header("to"), "to": e.header("from"), "service": "friends", "event": "friend/accept"})
 		mochi.db.execute("delete from invites where identity=? and id=?", e.header("to"), e.header("from"))
 	else:
 		mochi.db.execute("replace into invites ( identity, id, direction, name, updated ) values ( ?, ?, 'from', ?, ? )", e.header("to"), e.header("from"), name, mochi.time.now())
-		mochi.service.call("notifications", "create", "friends", "invite", e.header("from"), name + " sent you a friend invitation", "/friends")
+		mochi.service.call("notifications", "create", "friends", "invite", e.header("from"), name + " sent you a friend invitation", "/people")
 
 def event_cancel(e):
 	# Remove the invitation from the recipient's side
@@ -158,3 +158,115 @@ def function_list(identity):
 	if not identity:
 		return []
 	return mochi.db.rows("select * from friends where identity=? order by name, id", identity)
+
+# Group management actions
+
+def action_groups(a):
+	groups = mochi.group.list()
+	return {"data": {"groups": groups}}
+
+def action_group_get(a):
+	id = a.input("id")
+	if not id:
+		return json_error("Missing group ID")
+
+	group = mochi.group.get(id)
+	if not group:
+		return json_error("Group not found", 404)
+
+	members = mochi.group.members(id)
+	return {"data": {"group": group, "members": members}}
+
+def action_group_create(a):
+	id = a.input("id")
+	if not id:
+		return json_error("Missing group ID")
+	if not mochi.valid(id, "id"):
+		return json_error("Invalid group ID format")
+
+	name = a.input("name")
+	if not name:
+		return json_error("Missing group name")
+	if not mochi.valid(name, "line"):
+		return json_error("Invalid group name")
+	if len(name) > 255:
+		return json_error("Group name too long")
+
+	description = a.input("description", "")
+	if description and not mochi.valid(description, "text"):
+		return json_error("Invalid description")
+
+	mochi.group.create(id, name, description)
+	return {"data": {"id": id}}
+
+def action_group_update(a):
+	id = a.input("id")
+	if not id:
+		return json_error("Missing group ID")
+
+	group = mochi.group.get(id)
+	if not group:
+		return json_error("Group not found", 404)
+
+	name = a.input("name", "")
+	description = a.input("description", "")
+
+	if name:
+		if not mochi.valid(name, "line"):
+			return json_error("Invalid group name")
+		if len(name) > 255:
+			return json_error("Group name too long")
+
+	if description and not mochi.valid(description, "text"):
+		return json_error("Invalid description")
+
+	mochi.group.update(id, name=name, description=description)
+	return {"data": {}}
+
+def action_group_delete(a):
+	id = a.input("id")
+	if not id:
+		return json_error("Missing group ID")
+
+	group = mochi.group.get(id)
+	if not group:
+		return json_error("Group not found", 404)
+
+	mochi.group.delete(id)
+	return {"data": {}}
+
+def action_group_member_add(a):
+	group = a.input("group")
+	if not group:
+		return json_error("Missing group ID")
+
+	g = mochi.group.get(group)
+	if not g:
+		return json_error("Group not found", 404)
+
+	member = a.input("member")
+	if not member:
+		return json_error("Missing member ID")
+
+	type = a.input("type", "user")
+	if type not in ["user", "group"]:
+		return json_error("Invalid member type")
+
+	mochi.group.add(group, member, type)
+	return {"data": {}}
+
+def action_group_member_remove(a):
+	group = a.input("group")
+	if not group:
+		return json_error("Missing group ID")
+
+	g = mochi.group.get(group)
+	if not g:
+		return json_error("Group not found", 404)
+
+	member = a.input("member")
+	if not member:
+		return json_error("Missing member ID")
+
+	mochi.group.remove(group, member)
+	return {"data": {}}

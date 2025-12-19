@@ -17,6 +17,8 @@ import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors404RouteImport } from './routes/(errors)/404'
 import { Route as errors403RouteImport } from './routes/(errors)/403'
 import { Route as errors401RouteImport } from './routes/(errors)/401'
+import { Route as AuthenticatedGroupsIndexRouteImport } from './routes/_authenticated/groups/index'
+import { Route as AuthenticatedGroupsIdRouteImport } from './routes/_authenticated/groups/$id'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -59,6 +61,17 @@ const errors401Route = errors401RouteImport.update({
   path: '/401',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedGroupsIndexRoute =
+  AuthenticatedGroupsIndexRouteImport.update({
+    id: '/groups/',
+    path: '/groups/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGroupsIdRoute = AuthenticatedGroupsIdRouteImport.update({
+  id: '/groups/$id',
+  path: '/groups/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
@@ -75,6 +88,8 @@ export interface FileRoutesByFullPath {
   '/invitations': typeof AuthenticatedInvitationsRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/groups/$id': typeof AuthenticatedGroupsIdRoute
+  '/groups': typeof AuthenticatedGroupsIndexRoute
 }
 export interface FileRoutesByTo {
   '/401': typeof errors401Route
@@ -85,6 +100,8 @@ export interface FileRoutesByTo {
   '/invitations': typeof AuthenticatedInvitationsRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/groups/$id': typeof AuthenticatedGroupsIdRoute
+  '/groups': typeof AuthenticatedGroupsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +114,8 @@ export interface FileRoutesById {
   '/_authenticated/invitations': typeof AuthenticatedInvitationsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/_authenticated/groups/$id': typeof AuthenticatedGroupsIdRoute
+  '/_authenticated/groups/': typeof AuthenticatedGroupsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,6 +128,8 @@ export interface FileRouteTypes {
     | '/invitations'
     | '/'
     | '/errors/$error'
+    | '/groups/$id'
+    | '/groups'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/401'
@@ -119,6 +140,8 @@ export interface FileRouteTypes {
     | '/invitations'
     | '/'
     | '/errors/$error'
+    | '/groups/$id'
+    | '/groups'
   id:
     | '__root__'
     | '/_authenticated'
@@ -130,6 +153,8 @@ export interface FileRouteTypes {
     | '/_authenticated/invitations'
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
+    | '/_authenticated/groups/$id'
+    | '/_authenticated/groups/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -199,6 +224,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof errors401RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/groups/': {
+      id: '/_authenticated/groups/'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof AuthenticatedGroupsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/groups/$id': {
+      id: '/_authenticated/groups/$id'
+      path: '/groups/$id'
+      fullPath: '/groups/$id'
+      preLoaderRoute: typeof AuthenticatedGroupsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/errors/$error': {
       id: '/_authenticated/errors/$error'
       path: '/errors/$error'
@@ -213,12 +252,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInvitationsRoute: typeof AuthenticatedInvitationsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedGroupsIdRoute: typeof AuthenticatedGroupsIdRoute
+  AuthenticatedGroupsIndexRoute: typeof AuthenticatedGroupsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvitationsRoute: AuthenticatedInvitationsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedGroupsIdRoute: AuthenticatedGroupsIdRoute,
+  AuthenticatedGroupsIndexRoute: AuthenticatedGroupsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
