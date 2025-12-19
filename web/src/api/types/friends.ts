@@ -80,3 +80,12 @@ export interface SearchUsersResponse {
   results: User[]
   [key: string]: unknown
 }
+
+export interface LocalUser {
+  id: string
+  name: string
+}
+
+export interface SearchLocalUsersResponse {
+  results: LocalUser[]
+}

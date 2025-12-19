@@ -5,7 +5,7 @@ import {
   useAddGroupMemberMutation,
   useGroupsQuery,
 } from '@/hooks/useGroups'
-import { useSearchUsersQuery } from '@/hooks/useFriends'
+import { useSearchLocalUsersQuery } from '@/hooks/useFriends'
 import {
   Dialog,
   DialogContent,
@@ -39,8 +39,8 @@ export function MemberDialog({ open, onOpenChange, groupId }: MemberDialogProps)
 
   const addMemberMutation = useAddGroupMemberMutation()
   const { data: groups } = useGroupsQuery()
-  const { data: searchResults, isLoading: searchLoading } = useSearchUsersQuery(userSearch, {
-    enabled: userSearch.length >= 2,
+  const { data: searchResults, isLoading: searchLoading } = useSearchLocalUsersQuery(userSearch, {
+    enabled: userSearch.length >= 1,
   })
 
   const availableGroups = (groups ?? []).filter((g) => g.id !== groupId)
@@ -127,9 +127,9 @@ export function MemberDialog({ open, onOpenChange, groupId }: MemberDialogProps)
                 </div>
               </div>
 
-              {userSearch.length < 2 ? (
+              {userSearch.length < 1 ? (
                 <p className='text-muted-foreground text-center text-sm'>
-                  Type at least 2 characters to search
+                  Type to search users
                 </p>
               ) : searchLoading ? (
                 <p className='text-muted-foreground text-center text-sm'>

@@ -88,7 +88,7 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
       <DialogContent className='sm:max-w-[425px]'>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{isEditing ? 'Edit Group' : 'Create Group'}</DialogTitle>
+            <DialogTitle>{isEditing ? 'Edit group' : 'Create group'}</DialogTitle>
             <DialogDescription>
               {isEditing
                 ? 'Update the group name and description.'

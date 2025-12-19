@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { useParams, useNavigate, Link } from '@tanstack/react-router'
-import { ArrowLeft, Pencil, Trash2, UserPlus, User, UsersRound, X } from 'lucide-react'
+import { useParams, useNavigate } from '@tanstack/react-router'
+import { Pencil, Trash2, UserPlus, User, UsersRound, X } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   useGroupQuery,
   useDeleteGroupMutation,
   useRemoveGroupMemberMutation,
 } from '@/hooks/useGroups'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,14 +38,17 @@ export function GroupDetail() {
   const deleteMutation = useDeleteGroupMutation()
   const removeMemberMutation = useRemoveGroupMemberMutation()
 
+  usePageTitle(data?.group?.name ?? 'Group')
+
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [memberDialogOpen, setMemberDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [removeMemberDialog, setRemoveMemberDialog] = useState<{
     open: boolean
     member: string
+    name: string
     type: 'user' | 'group'
-  }>({ open: false, member: '', type: 'user' })
+  }>({ open: false, member: '', name: '', type: 'user' })
 
   const handleDelete = () => {
     deleteMutation.mutate(
@@ -61,8 +65,8 @@ export function GroupDetail() {
     )
   }
 
-  const handleRemoveMember = (member: string, type: 'user' | 'group') => {
-    setRemoveMemberDialog({ open: true, member, type })
+  const handleRemoveMember = (member: string, name: string, type: 'user' | 'group') => {
+    setRemoveMemberDialog({ open: true, member, name, type })
   }
 
   const confirmRemoveMember = () => {
@@ -71,7 +75,7 @@ export function GroupDetail() {
       {
         onSuccess: () => {
           toast.success('Member removed')
-          setRemoveMemberDialog({ open: false, member: '', type: 'user' })
+          setRemoveMemberDialog({ open: false, member: '', name: '', type: 'user' })
         },
         onError: () => {
           toast.error('Failed to remove member')
@@ -88,12 +92,6 @@ export function GroupDetail() {
           <div className='text-muted-foreground text-sm'>
             {error instanceof Error ? error.message : 'Unknown error'}
           </div>
-          <Link to='/groups'>
-            <Button variant='outline' className='mt-4'>
-              <ArrowLeft className='mr-2 h-4 w-4' />
-              Back to Groups
-            </Button>
-          </Link>
         </div>
       </Main>
     )
@@ -114,10 +112,6 @@ export function GroupDetail() {
   return (
     <Main>
       <div className='mb-6'>
-        <Link to='/groups' className='text-muted-foreground hover:text-foreground mb-4 inline-flex items-center text-sm'>
-          <ArrowLeft className='mr-1 h-4 w-4' />
-          Back to Groups
-        </Link>
         <div className='flex items-center justify-between'>
           <div>
             <h1 className='text-2xl font-bold tracking-tight'>{group.name}</h1>
@@ -142,7 +136,7 @@ export function GroupDetail() {
         <h2 className='text-lg font-semibold'>Members ({members.length})</h2>
         <Button onClick={() => setMemberDialogOpen(true)}>
           <UserPlus className='mr-2 h-4 w-4' />
-          Add Member
+          Add member
         </Button>
       </div>
 
@@ -165,7 +159,7 @@ export function GroupDetail() {
             <TableBody>
               {members.map((member) => (
                 <TableRow key={member.member}>
-                  <TableCell className='font-medium'>{member.member}</TableCell>
+                  <TableCell className='font-medium'>{member.name}</TableCell>
                   <TableCell>
                     <span className='inline-flex items-center gap-1'>
                       {member.type === 'group' ? (
@@ -185,7 +179,7 @@ export function GroupDetail() {
                     <Button
                       variant='ghost'
                       size='icon'
-                      onClick={() => handleRemoveMember(member.member, member.type)}
+                      onClick={() => handleRemoveMember(member.member, member.name, member.type)}
                     >
                       <X className='h-4 w-4' />
                     </Button>
@@ -243,7 +237,7 @@ export function GroupDetail() {
             <AlertDialogDescription>
               Are you sure you want to remove{' '}
               <span className='text-foreground font-semibold'>
-                {removeMemberDialog.member}
+                {removeMemberDialog.name}
               </span>{' '}
               from this group?
             </AlertDialogDescription>

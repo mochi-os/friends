@@ -6,6 +6,7 @@ import {
   useGroupsQuery,
   useDeleteGroupMutation,
 } from '@/hooks/useGroups'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,19 +18,13 @@ import {
   AlertDialogTitle,
 } from '@mochi/common'
 import { Button } from '@mochi/common'
+import { Card, CardContent } from '@mochi/common'
 import { Main } from '@mochi/common'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@mochi/common'
 import { GroupDialog } from './group-dialog'
 import type { Group } from '@/api/types/groups'
 
 export function Groups() {
+  usePageTitle('Groups')
   const [search, setSearch] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editGroup, setEditGroup] = useState<Group | null>(null)
@@ -112,7 +107,7 @@ export function Groups() {
           />
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className='mr-2 h-4 w-4' />
-            Create Group
+            Create group
           </Button>
         </div>
       </div>
@@ -126,19 +121,15 @@ export function Groups() {
           )}
         </div>
       ) : (
-        <div className='rounded-md border'>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className='w-[100px]'>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredGroups.map((group) => (
-                <TableRow key={group.id}>
-                  <TableCell>
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+          {filteredGroups.map((group) => (
+            <Card
+              key={group.id}
+              className='group transition-shadow hover:shadow-md'
+            >
+              <CardContent className='p-4'>
+                <div className='flex flex-col space-y-3'>
+                  <div>
                     <Link
                       to='/groups/$id'
                       params={{ id: group.id }}
@@ -146,32 +137,34 @@ export function Groups() {
                     >
                       {group.name}
                     </Link>
-                  </TableCell>
-                  <TableCell className='text-muted-foreground'>
-                    {group.description || '-'}
-                  </TableCell>
-                  <TableCell>
-                    <div className='flex items-center gap-1'>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        onClick={() => handleEdit(group)}
-                      >
-                        <Pencil className='h-4 w-4' />
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        onClick={() => handleDelete(group)}
-                      >
-                        <Trash2 className='h-4 w-4' />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    {group.description && (
+                      <p className='text-muted-foreground mt-1 text-sm line-clamp-2'>
+                        {group.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      className='flex-1'
+                      onClick={() => handleEdit(group)}
+                    >
+                      <Pencil className='mr-1 h-4 w-4' />
+                      Edit
+                    </Button>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => handleDelete(group)}
+                    >
+                      <Trash2 className='h-4 w-4' />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
@@ -187,7 +180,7 @@ export function Groups() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Group</AlertDialogTitle>
+            <AlertDialogTitle>Delete group</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete{' '}
               <span className='text-foreground font-semibold'>

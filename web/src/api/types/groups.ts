@@ -7,8 +7,8 @@ export interface Group {
 
 export interface GroupMember {
   member: string
+  name: string
   type: 'user' | 'group'
-  created: number
 }
 
 export interface GetGroupsResponse {

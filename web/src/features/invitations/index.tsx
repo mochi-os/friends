@@ -7,12 +7,14 @@ import {
   useDeclineFriendInviteMutation,
   useRemoveFriendMutation,
 } from '@/hooks/useFriends'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@mochi/common'
 import { Card, CardContent } from '@mochi/common'
 import { Main } from '@mochi/common'
 import { AddFriendDialog } from '@/features/friends/components/add-friend-dialog'
 
 export function Invitations() {
+  usePageTitle('Invitations')
   const [search, setSearch] = useState('')
   const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false)
   const { data: friendsData, isLoading, isError, error } = useFriendsQuery()

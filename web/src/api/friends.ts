@@ -9,6 +9,7 @@ import type {
   GetFriendsListResponse,
   MutationSuccessResponse,
   SearchUsersResponse,
+  SearchLocalUsersResponse,
 } from '@/api/types/friends'
 import { requestHelpers } from '@mochi/common'
 
@@ -129,6 +130,22 @@ const searchUsers = async (query: string): Promise<SearchUsersResponse> => {
   return response
 }
 
+const searchLocalUsers = async (query: string): Promise<SearchLocalUsersResponse> => {
+  const formData = new URLSearchParams()
+  formData.append('search', query)
+
+  const response = await requestHelpers.post<SearchLocalUsersResponse>(
+    endpoints.users.search,
+    formData.toString(),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+  )
+  return response
+}
+
 const toMutationSuccess = async <T>(
   promise: Promise<T>
 ): Promise<MutationSuccessResponse> => {
@@ -194,6 +211,7 @@ const removeFriend = (friendId: string) =>
 export const friendsApi = {
   list: listFriends,
   searchUsers,
+  searchLocalUsers,
   create: createFriend,
   acceptInvite: acceptFriendInvite,
   declineInvite: declineFriendInvite,
@@ -209,6 +227,7 @@ export type {
   GetFriendsListResponse,
   MutationSuccessResponse,
   SearchUsersResponse,
+  SearchLocalUsersResponse,
 }
 
 export default friendsApi

@@ -8,6 +8,7 @@ import {
   useFriendsQuery,
   useRemoveFriendMutation,
 } from '@/hooks/useFriends'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,7 @@ import { AddFriendDialog } from './components/add-friend-dialog'
 import { FRIENDS_STRINGS } from './constants'
 
 export function Friends() {
+  usePageTitle('Friends')
   const [search, setSearch] = useState('')
   const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false)
   const [removeFriendDialog, setRemoveFriendDialog] = useState<{

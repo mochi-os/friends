@@ -12,23 +12,18 @@ import type {
 } from '@/api/types/groups'
 import { requestHelpers } from '@mochi/common'
 
-interface ApiResponse<T> {
-  data?: T
-  error?: string
-}
-
 const listGroups = async (): Promise<Group[]> => {
-  const response = await requestHelpers.get<ApiResponse<GetGroupsResponse>>(
+  const response = await requestHelpers.get<GetGroupsResponse>(
     endpoints.groups.list
   )
-  return response.data?.groups ?? []
+  return response?.groups ?? []
 }
 
 const getGroup = async (id: string): Promise<{ group: Group; members: GroupMember[] }> => {
   const params = new URLSearchParams()
   params.append('id', id)
 
-  const response = await requestHelpers.post<ApiResponse<GetGroupResponse>>(
+  const response = await requestHelpers.post<GetGroupResponse>(
     endpoints.groups.get,
     params.toString(),
     {
@@ -38,13 +33,13 @@ const getGroup = async (id: string): Promise<{ group: Group; members: GroupMembe
     }
   )
 
-  if (!response.data?.group) {
+  if (!response?.group) {
     throw new Error('Group not found')
   }
 
   return {
-    group: response.data.group,
-    members: response.data.members ?? [],
+    group: response.group,
+    members: response.members ?? [],
   }
 }
 

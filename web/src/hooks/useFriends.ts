@@ -9,12 +9,14 @@ import friendsApi, {
   type GetFriendsListResponse,
   type MutationSuccessResponse,
   type SearchUsersResponse,
+  type SearchLocalUsersResponse,
   type CreateFriendRequest,
 } from '@/api/friends'
 
 export const friendKeys = {
   all: () => ['friends'] as const,
   search: (query: string) => ['friends', 'search', query] as const,
+  localUsers: (query: string) => ['users', 'search', query] as const,
 }
 
 export const useFriendsQuery = () =>
@@ -94,6 +96,16 @@ export const useSearchUsersQuery = (
   useQuery<SearchUsersResponse>({
     queryKey: friendKeys.search(query),
     queryFn: () => friendsApi.searchUsers(query),
+    ...options,
+  })
+
+export const useSearchLocalUsersQuery = (
+  query: string,
+  options?: Omit<UseQueryOptions<SearchLocalUsersResponse>, 'queryKey' | 'queryFn'>
+) =>
+  useQuery<SearchLocalUsersResponse>({
+    queryKey: friendKeys.localUsers(query),
+    queryFn: () => friendsApi.searchLocalUsers(query),
     ...options,
   })
 

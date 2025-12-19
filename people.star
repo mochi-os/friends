@@ -104,7 +104,7 @@ def action_list(a):
 		"sent": mochi.db.rows("select * from invites where identity=? and direction='to' order by updated desc", identity)
 	}}
 
-# Search for friends to add
+# Search for friends to add (searches P2P directory)
 def action_search(a):
 	search = a.input("search", "").strip()
 	if len(search) > 100:
@@ -119,6 +119,25 @@ def action_search(a):
 		if result["id"] not in seen:
 			seen[result["id"]] = True
 			unique_results.append(result)
+
+	return {"data": {"results": unique_results}}
+
+# Search for users (for group membership)
+def action_users_search(a):
+	search = a.input("search", "").strip()
+	if len(search) > 100:
+		return json_error("Search query too long")
+	if len(search) < 1:
+		return {"data": {"results": []}}
+
+	seen = {}
+	unique_results = []
+
+	results = mochi.directory.search("person", search, False)
+	for result in results:
+		if result["id"] not in seen:
+			seen[result["id"]] = True
+			unique_results.append({"id": result["id"], "name": result["name"]})
 
 	return {"data": {"results": unique_results}}
 
@@ -175,7 +194,34 @@ def action_group_get(a):
 		return json_error("Group not found", 404)
 
 	members = mochi.group.members(id)
-	return {"data": {"group": group, "members": members}}
+
+	# Enrich members with names
+	enriched_members = []
+	for member in members:
+		name = member["member"]
+		member_id = member["member"]
+		if member["type"] == "user":
+			# Check if it's a numeric user ID or an entity ID
+			if member_id.isdigit():
+				user = mochi.user.get.id(int(member_id))
+				if user:
+					name = user["username"]
+			else:
+				# Entity from directory
+				entity = mochi.directory.get(member_id)
+				if entity:
+					name = entity["name"]
+		elif member["type"] == "group":
+			g = mochi.group.get(member_id)
+			if g:
+				name = g["name"]
+		enriched_members.append({
+			"member": member_id,
+			"type": member["type"],
+			"name": name,
+		})
+
+	return {"data": {"group": group, "members": enriched_members}}
 
 def action_group_create(a):
 	id = a.input("id", "")
