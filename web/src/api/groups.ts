@@ -50,7 +50,9 @@ const getGroup = async (id: string): Promise<{ group: Group; members: GroupMembe
 
 const createGroup = async (payload: CreateGroupRequest): Promise<MutationSuccessResponse> => {
   const params = new URLSearchParams()
-  params.append('id', payload.id)
+  if (payload.id) {
+    params.append('id', payload.id)
+  }
   params.append('name', payload.name)
   if (payload.description) {
     params.append('description', payload.description)

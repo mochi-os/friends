@@ -21,7 +21,7 @@ export interface GetGroupResponse {
 }
 
 export interface CreateGroupRequest {
-  id: string
+  id?: string
   name: string
   description?: string
 }

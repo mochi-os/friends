@@ -25,7 +25,6 @@ interface GroupDialogProps {
 }
 
 export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
-  const [id, setId] = useState('')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
 
@@ -36,11 +35,9 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
   useEffect(() => {
     if (open) {
       if (group) {
-        setId(group.id)
         setName(group.name)
         setDescription(group.description || '')
       } else {
-        setId('')
         setName('')
         setDescription('')
       }
@@ -69,13 +66,8 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
         }
       )
     } else {
-      if (!id.trim()) {
-        toast.error('ID is required')
-        return
-      }
-
       createMutation.mutate(
-        { id: id.trim(), name: name.trim(), description: description.trim() },
+        { name: name.trim(), description: description.trim() },
         {
           onSuccess: () => {
             toast.success('Group created')
@@ -104,21 +96,6 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
             </DialogDescription>
           </DialogHeader>
           <div className='grid gap-4 py-4'>
-            {!isEditing && (
-              <div className='grid gap-2'>
-                <Label htmlFor='id'>ID</Label>
-                <Input
-                  id='id'
-                  value={id}
-                  onChange={(e) => setId(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-                  placeholder='group-id'
-                  disabled={isPending}
-                />
-                <p className='text-muted-foreground text-xs'>
-                  Lowercase letters and numbers only. Cannot be changed later.
-                </p>
-              </div>
-            )}
             <div className='grid gap-2'>
               <Label htmlFor='name'>Name</Label>
               <Input

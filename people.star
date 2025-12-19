@@ -178,11 +178,9 @@ def action_group_get(a):
 	return {"data": {"group": group, "members": members}}
 
 def action_group_create(a):
-	id = a.input("id")
+	id = a.input("id", "")
 	if not id:
-		return json_error("Missing group ID")
-	if not mochi.valid(id, "id"):
-		return json_error("Invalid group ID format")
+		id = mochi.uid()
 
 	name = a.input("name")
 	if not name:
