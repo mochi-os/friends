@@ -23,5 +23,5 @@ export const Route = createFileRoute('/_authenticated')({
 
     return
   },
-  component: () => <AuthenticatedLayout title="People" sidebarData={sidebarData} />,
+  component: () => <AuthenticatedLayout sidebarData={sidebarData} />,
 })
