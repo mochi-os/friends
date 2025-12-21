@@ -1,10 +1,9 @@
-import { useState } from 'react'
-import { useParams, useNavigate } from '@tanstack/react-router'
-import { Pencil, Trash2, UserPlus, User, UsersRound, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useParams } from '@tanstack/react-router'
+import { User, UsersRound, X } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   useGroupQuery,
-  useDeleteGroupMutation,
   useRemoveGroupMemberMutation,
 } from '@/hooks/useGroups'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -28,42 +27,28 @@ import {
   TableHeader,
   TableRow,
 } from '@mochi/common'
-import { GroupDialog } from './group-dialog'
-import { MemberDialog } from './member-dialog'
+import { useSidebarContext } from '@/context/sidebar-context'
 
 export function GroupDetail() {
   const { id } = useParams({ from: '/_authenticated/groups/$id' })
-  const navigate = useNavigate()
   const { data, isLoading, isError, error } = useGroupQuery(id)
-  const deleteMutation = useDeleteGroupMutation()
   const removeMemberMutation = useRemoveGroupMemberMutation()
+  const { setGroupId } = useSidebarContext()
 
   usePageTitle(data?.group?.name ?? 'Group')
 
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [memberDialogOpen, setMemberDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  // Register with sidebar context
+  useEffect(() => {
+    setGroupId(id)
+    return () => setGroupId(null)
+  }, [id, setGroupId])
+
   const [removeMemberDialog, setRemoveMemberDialog] = useState<{
     open: boolean
     member: string
     name: string
     type: 'user' | 'group'
   }>({ open: false, member: '', name: '', type: 'user' })
-
-  const handleDelete = () => {
-    deleteMutation.mutate(
-      { id },
-      {
-        onSuccess: () => {
-          toast.success('Group deleted')
-          navigate({ to: '/groups' })
-        },
-        onError: () => {
-          toast.error('Failed to delete group')
-        },
-      }
-    )
-  }
 
   const handleRemoveMember = (member: string, name: string, type: 'user' | 'group') => {
     setRemoveMemberDialog({ open: true, member, name, type })
@@ -112,33 +97,13 @@ export function GroupDetail() {
   return (
     <Main>
       <div className='mb-6'>
-        <div className='flex items-center justify-between'>
-          <div>
-            <h1 className='text-2xl font-bold tracking-tight'>{group.name}</h1>
-            {group.description && (
-              <p className='text-muted-foreground mt-1'>{group.description}</p>
-            )}
-          </div>
-          <div className='flex items-center gap-2'>
-            <Button variant='outline' onClick={() => setEditDialogOpen(true)}>
-              <Pencil className='mr-2 h-4 w-4' />
-              Edit
-            </Button>
-            <Button variant='destructive' onClick={() => setDeleteDialogOpen(true)}>
-              <Trash2 className='mr-2 h-4 w-4' />
-              Delete
-            </Button>
-          </div>
-        </div>
+        <h1 className='text-2xl font-bold tracking-tight'>{group.name}</h1>
+        {group.description && (
+          <p className='text-muted-foreground mt-1'>{group.description}</p>
+        )}
       </div>
 
-      <div className='mb-4 flex items-center justify-between'>
-        <h2 className='text-lg font-semibold'>Members ({members.length})</h2>
-        <Button onClick={() => setMemberDialogOpen(true)}>
-          <UserPlus className='mr-2 h-4 w-4' />
-          Add member
-        </Button>
-      </div>
+      <h2 className='text-lg font-semibold mb-4'>Members ({members.length})</h2>
 
       {members.length === 0 ? (
         <div className='text-muted-foreground rounded-md border py-8 text-center'>
@@ -190,42 +155,6 @@ export function GroupDetail() {
           </Table>
         </div>
       )}
-
-      <GroupDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        group={group}
-      />
-
-      <MemberDialog
-        open={memberDialogOpen}
-        onOpenChange={setMemberDialogOpen}
-        groupId={id}
-      />
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Group</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete{' '}
-              <span className='text-foreground font-semibold'>{group.name}</span>?
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteMutation.isPending}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <AlertDialog
         open={removeMemberDialog.open}

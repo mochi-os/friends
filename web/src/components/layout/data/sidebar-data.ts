@@ -1,6 +1,8 @@
-import { Users, User, UsersRound } from 'lucide-react'
+import { Users, User } from 'lucide-react'
 import { type SidebarData } from '@mochi/common'
 
+// Static sidebar data for CommandMenu (Cmd+K)
+// The full dynamic sidebar is built in PeopleLayout
 export const sidebarData: SidebarData = {
   navGroups: [
     {
@@ -15,11 +17,6 @@ export const sidebarData: SidebarData = {
           title: 'Invitations',
           url: '/invitations',
           icon: User,
-        },
-        {
-          title: 'Groups',
-          url: '/groups',
-          icon: UsersRound,
         },
       ],
     },
