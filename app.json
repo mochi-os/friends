@@ -32,14 +32,14 @@
 		"-/friends/search": {"function": "action_search"},
 		"groups": {"file": "web/dist/index.html"},
 		"groups/:id": {"file": "web/dist/index.html"},
-		"_/groups": {"function": "action_groups"},
-		"_/groups/get": {"function": "action_group_get"},
-		"_/groups/create": {"function": "action_group_create"},
-		"_/groups/update": {"function": "action_group_update"},
-		"_/groups/delete": {"function": "action_group_delete"},
-		"_/groups/members/add": {"function": "action_group_member_add"},
-		"_/groups/members/remove": {"function": "action_group_member_remove"},
-		"_/users/search": {"function": "action_users_search"}
+		"api/groups": {"function": "action_groups"},
+		"api/groups/get": {"function": "action_group_get"},
+		"api/groups/create": {"function": "action_group_create"},
+		"api/groups/update": {"function": "action_group_update"},
+		"api/groups/delete": {"function": "action_group_delete"},
+		"api/groups/members/add": {"function": "action_group_member_add"},
+		"api/groups/members/remove": {"function": "action_group_member_remove"},
+		"api/users/search": {"function": "action_users_search"}
 	},
 
 	"events": {
