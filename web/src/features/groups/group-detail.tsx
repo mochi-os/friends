@@ -162,7 +162,7 @@ export function GroupDetail() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+            <AlertDialogTitle>Remove member</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to remove{' '}
               <span className='text-foreground font-semibold'>

@@ -90,7 +90,7 @@ export function MemberDialog({ open, onOpenChange, groupId }: MemberDialogProps)
     <Dialog open={open} onOpenChange={resetAndClose}>
       <DialogContent className='sm:max-w-[500px]'>
         <DialogHeader>
-          <DialogTitle>Add Member</DialogTitle>
+          <DialogTitle>Add member</DialogTitle>
           <DialogDescription>
             Add a user or group as a member of this group.
           </DialogDescription>
@@ -111,7 +111,7 @@ export function MemberDialog({ open, onOpenChange, groupId }: MemberDialogProps)
           <TabsContent value='user' className='mt-4'>
             <div className='space-y-4'>
               <div className='grid gap-2'>
-                <Label htmlFor='user-search'>Search Users</Label>
+                <Label htmlFor='user-search'>Search users</Label>
                 <div className='relative'>
                   <Search className='text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2' />
                   <Input
