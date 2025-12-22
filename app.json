@@ -32,14 +32,14 @@
 		"-/friends/search": {"function": "action_search"},
 		"groups": {"file": "web/dist/index.html"},
 		"groups/:id": {"file": "web/dist/index.html"},
-		"api/groups": {"function": "action_groups"},
-		"api/groups/get": {"function": "action_group_get"},
-		"api/groups/create": {"function": "action_group_create"},
-		"api/groups/update": {"function": "action_group_update"},
-		"api/groups/delete": {"function": "action_group_delete"},
-		"api/groups/members/add": {"function": "action_group_member_add"},
-		"api/groups/members/remove": {"function": "action_group_member_remove"},
-		"api/users/search": {"function": "action_users_search"}
+		"-/groups": {"function": "action_groups"},
+		"-/groups/get": {"function": "action_group_get"},
+		"-/groups/create": {"function": "action_group_create"},
+		"-/groups/update": {"function": "action_group_update"},
+		"-/groups/delete": {"function": "action_group_delete"},
+		"-/groups/members/add": {"function": "action_group_member_add"},
+		"-/groups/members/remove": {"function": "action_group_member_remove"},
+		"-/users/search": {"function": "action_users_search"}
 	},
 
 	"events": {
@@ -50,6 +50,8 @@
 
 	"functions": {
 		"get": {"function": "function_get"},
-		"list": {"function": "function_list"}
+		"list": {"function": "function_list"},
+		"users/search": {"function": "function_users_search"},
+		"groups/list": {"function": "function_groups_list"}
 	}
 }

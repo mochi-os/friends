@@ -178,6 +178,23 @@ def function_list(identity):
 		return []
 	return mochi.db.rows("select * from friends where identity=? order by name, id", identity)
 
+# Service function for user search
+def function_users_search(query):
+	if not query or len(query) > 100:
+		return []
+	seen = {}
+	unique_results = []
+	results = mochi.directory.search("person", query, False)
+	for result in results:
+		if result["id"] not in seen:
+			seen[result["id"]] = True
+			unique_results.append({"id": result["id"], "name": result["name"]})
+	return unique_results
+
+# Service function for groups list
+def function_groups_list():
+	return mochi.group.list()
+
 # Group management actions
 
 def action_groups(a):
