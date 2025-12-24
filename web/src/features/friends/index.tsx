@@ -8,7 +8,6 @@ import {
   useFriendsQuery,
   useRemoveFriendMutation,
 } from '@/hooks/useFriends'
-import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,10 +17,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Button,
+  Card,
+  CardContent,
+  Main,
+  usePageTitle,
 } from '@mochi/common'
-import { Button } from '@mochi/common'
-import { Card, CardContent } from '@mochi/common'
-import { Main } from '@mochi/common'
 import { AddFriendDialog } from './components/add-friend-dialog'
 import { FRIENDS_STRINGS } from './constants'
 

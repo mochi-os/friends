@@ -6,7 +6,6 @@ import {
   useGroupQuery,
   useRemoveGroupMemberMutation,
 } from '@/hooks/useGroups'
-import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,16 +15,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@mochi/common'
-import { Button } from '@mochi/common'
-import { Main } from '@mochi/common'
-import {
+  Button,
+  Main,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
+  usePageTitle,
 } from '@mochi/common'
 import { useSidebarContext } from '@/context/sidebar-context'
 
