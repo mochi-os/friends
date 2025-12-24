@@ -17,6 +17,7 @@ export const FRIENDS_STRINGS = {
   CANCEL: 'Cancel',
   REMOVING: 'Removing...',
   ADDING: 'Adding...',
+  INVITED: 'Invited',
   CLOSE: 'Close',
 
   // Search & Inputs

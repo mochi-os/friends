@@ -26,6 +26,8 @@ type AddFriendDialogProps = {
 export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [invitedUserIds, setInvitedUserIds] = useState<Set<string>>(new Set())
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null)
 
   // Debounce search query
   useEffect(() => {
@@ -42,11 +44,15 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
 
   const createFriendMutation = useCreateFriendMutation({
     onSuccess: (_, variables) => {
+      // Add user to invited set
+      setInvitedUserIds((prev) => new Set(prev).add(variables.id))
+      setPendingUserId(null)
       toast.success(FRIENDS_STRINGS.SUCCESS_INVITATION_SENT, {
         description: `${FRIENDS_STRINGS.SUCCESS_INVITATION_SENT_DESC} ${variables.name}.`,
       })
     },
     onError: (error) => {
+      setPendingUserId(null)
       toast.error(FRIENDS_STRINGS.ERR_ADD_FRIEND, {
         description:
           error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_GENERIC,
@@ -60,6 +66,7 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
   )
 
   const handleAddFriend = (userId: string, userName: string) => {
+    setPendingUserId(userId)
     createFriendMutation.mutate({
       id: userId,
       name: userName,
@@ -70,6 +77,8 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
     if (!open) {
       setSearchQuery('')
       setDebouncedQuery('')
+      setInvitedUserIds(new Set())
+      setPendingUserId(null)
     }
   }, [open])
 
@@ -114,8 +123,8 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
           </div>
 
           {/* Results List */}
-          <ScrollArea className='flex-1 rounded-lg border'>
-            <div className='p-2 min-h-[250px] h-[15rem]'>
+          <ScrollArea className='max-h-[300px] flex-1 rounded-lg border'>
+            <div className='p-2 h-[16rem]'>
               {!showResults && (
                 <div className='flex flex-col items-center justify-center py-12 text-center'>
                   <UserPlus className='text-muted-foreground mb-3 h-12 w-12 opacity-50' />
@@ -160,7 +169,10 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
               {!isLoading && users.length > 0 && (
                 <div className='space-y-1'>
                   {users.map((user) => {
-                    const isPending = createFriendMutation.isPending
+                    const isInvited = invitedUserIds.has(user.id)
+                    const isPendingForThisUser = pendingUserId === user.id
+                    const isDisabled = isInvited || isPendingForThisUser
+                    
                     return (
                       <div
                         key={user.id}
@@ -191,14 +203,17 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                         </div>
                         <Button
                           size='sm'
+                          variant={isInvited ? 'secondary' : 'default'}
                           onClick={() => handleAddFriend(user.id, user.name)}
-                          disabled={isPending}
+                          disabled={isDisabled}
                         >
-                          {isPending ? (
+                          {isPendingForThisUser ? (
                             <>
                               {FRIENDS_STRINGS.ADDING}
                               <Loader2 className='ml-2 h-4 w-4 animate-spin' />
                             </>
+                          ) : isInvited ? (
+                            FRIENDS_STRINGS.INVITED
                           ) : (
                             <>
                               {FRIENDS_STRINGS.ADD_FRIEND}

@@ -13,17 +13,13 @@ const isWrappedResponse = (
 const createChat = async (
   payload: CreateChatRequest
 ): Promise<CreateChatResponse> => {
-  const formData = new FormData()
-  formData.append('name', payload.name)
-  payload.participantIds.forEach((friendId) => {
-    formData.append(friendId, 'true')
-  })
-
+  // Send members as a comma-separated string in the 'members' field
+  // The backend expects: a.input("members") which it then splits by comma
   const response = (await requestHelpers.post<CreateChatApiResponse>(
     endpoints.chat.create,
-    formData,
     {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      name: payload.name,
+      members: payload.participantIds.join(','),
     }
   )) as CreateChatApiResponse
 
