@@ -45,7 +45,8 @@
 	"events": {
 		"friend/accept": {"function": "event_accept"},
 		"friend/cancel": {"function": "event_cancel"},
-		"friend/invite": {"function": "event_invite"}
+		"friend/invite": {"function": "event_invite"},
+		"friend/remove": {"function": "event_remove"}
 	},
 
 	"functions": {
