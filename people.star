@@ -118,18 +118,58 @@ def action_list(a):
 
 # Search for friends to add (searches P2P directory)
 def action_search(a):
+	identity = a.user.identity.id
 	search = a.input("search", "").strip()
 	if len(search) > 100:
 		return json_error("Search query too long")
 
 	results = mochi.directory.search("person", search, False)
 
-	# Deduplicate results by ID to ensure each person appears only once
+	# Build sets of existing relationships for efficient lookup
+	friend_ids = set()
+	sent_invite_ids = set()
+	received_invite_ids = set()
+
+	# Get all friends
+	friends = mochi.db.rows("select id from friends where identity=?", identity)
+	for friend in friends:
+		friend_ids.add(friend["id"])
+
+	# Get all sent invitations (direction='to' means we invited them)
+	sent_invites = mochi.db.rows("select id from invites where identity=? and direction='to'", identity)
+	for invite in sent_invites:
+		sent_invite_ids.add(invite["id"])
+
+	# Get all received invitations (direction='from' means they invited us)
+	received_invites = mochi.db.rows("select id from invites where identity=? and direction='from'", identity)
+	for invite in received_invites:
+		received_invite_ids.add(invite["id"])
+
+	# Deduplicate results by ID and add relationship status
 	seen = {}
 	unique_results = []
 	for result in results:
-		if result["id"] not in seen:
-			seen[result["id"]] = True
+		result_id = result["id"]
+		if result_id not in seen:
+			seen[result_id] = True
+			
+			# Determine relationship status
+			# - "friend": Already friends
+			# - "invited": You sent them an invitation (outgoing)
+			# - "pending": They sent you an invitation (incoming)
+			# - "none": No existing relationship
+			if result_id == identity:
+				status = "self"
+			elif result_id in friend_ids:
+				status = "friend"
+			elif result_id in sent_invite_ids:
+				status = "invited"
+			elif result_id in received_invite_ids:
+				status = "pending"
+			else:
+				status = "none"
+			
+			result["relationshipStatus"] = status
 			unique_results.append(result)
 
 	return {"data": {"results": unique_results}}

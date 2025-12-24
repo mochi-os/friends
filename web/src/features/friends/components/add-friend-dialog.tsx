@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Search, Loader2, UserPlus } from 'lucide-react'
+import { Search, Loader2, UserPlus, UserCheck, Check, Send, Ban } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@mochi/common'
-import { useSearchUsersQuery, useCreateFriendMutation } from '@/hooks/useFriends'
+import { useSearchUsersQuery, useCreateFriendMutation, useAcceptFriendInviteMutation } from '@/hooks/useFriends'
 import { Avatar, AvatarFallback, AvatarImage } from '@mochi/common'
 import { Button } from '@mochi/common'
 import {
@@ -60,6 +60,24 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
     },
   })
 
+  const acceptFriendMutation = useAcceptFriendInviteMutation({
+    onSuccess: (_, variables) => {
+      // Mark as accepted by adding to invitedUserIds (which we'll repurpose for tracking processed users)
+      setInvitedUserIds((prev) => new Set(prev).add(variables.friendId))
+      setPendingUserId(null)
+      toast.success(FRIENDS_STRINGS.ALREADY_FRIENDS, {
+        description: 'You are now friends!',
+      })
+    },
+    onError: (error) => {
+      setPendingUserId(null)
+      toast.error(FRIENDS_STRINGS.ERR_ADD_FRIEND, {
+        description:
+          error instanceof Error ? error.message : FRIENDS_STRINGS.ERR_GENERIC,
+      })
+    },
+  })
+
   const users = useMemo(
     () => data?.results ?? [],
     [data?.results]
@@ -70,6 +88,13 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
     createFriendMutation.mutate({
       id: userId,
       name: userName,
+    })
+  }
+
+  const handleAcceptInvite = (userId: string) => {
+    setPendingUserId(userId)
+    acceptFriendMutation.mutate({
+      friendId: userId,
     })
   }
 
@@ -169,16 +194,91 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
               {!isLoading && users.length > 0 && (
                 <div className='space-y-1'>
                   {users.map((user) => {
-                    const isInvited = invitedUserIds.has(user.id)
+                    const sessionInvited = invitedUserIds.has(user.id)
                     const isPendingForThisUser = pendingUserId === user.id
-                    const isDisabled = isInvited || isPendingForThisUser
+                    
+                    // Determine the effective status considering both API response and session state
+                    const status = sessionInvited ? 'invited' : (user.relationshipStatus ?? 'none')
+                    
+                    // Determine if button should be disabled
+                    const isDisabled = 
+                      isPendingForThisUser ||
+                      status === 'friend' ||
+                      status === 'invited' ||
+                      status === 'self'
+                    
+                    // Determine button variant
+                    const getButtonVariant = () => {
+                      if (status === 'pending') return 'default'
+                      if (status === 'none') return 'default'
+                      return 'secondary'
+                    }
+                    
+                    // Determine button action
+                    const handleClick = () => {
+                      if (status === 'pending') {
+                        handleAcceptInvite(user.id)
+                      } else {
+                        handleAddFriend(user.id, user.name)
+                      }
+                    }
+                    
+                    // Render button content based on status
+                    const renderButtonContent = () => {
+                      if (isPendingForThisUser) {
+                        return (
+                          <>
+                            {FRIENDS_STRINGS.ADDING}
+                            <Loader2 className='ml-2 h-4 w-4 animate-spin' />
+                          </>
+                        )
+                      }
+                      
+                      switch (status) {
+                        case 'self':
+                          return (
+                            <>
+                              {FRIENDS_STRINGS.THATS_YOU}
+                              <Ban className='ml-2 h-4 w-4' />
+                            </>
+                          )
+                        case 'friend':
+                          return (
+                            <>
+                              {FRIENDS_STRINGS.ALREADY_FRIENDS}
+                              <UserCheck className='ml-2 h-4 w-4' />
+                            </>
+                          )
+                        case 'invited':
+                          return (
+                            <>
+                              {FRIENDS_STRINGS.INVITATION_SENT}
+                              <Send className='ml-2 h-4 w-4' />
+                            </>
+                          )
+                        case 'pending':
+                          return (
+                            <>
+                              {FRIENDS_STRINGS.PENDING_INVITE}
+                              <Check className='ml-2 h-4 w-4' />
+                            </>
+                          )
+                        default:
+                          return (
+                            <>
+                              {FRIENDS_STRINGS.ADD_FRIEND}
+                              <UserPlus className='ml-2 h-4 w-4' />
+                            </>
+                          )
+                      }
+                    }
                     
                     return (
                       <div
                         key={user.id}
                         className={cn(
-                          'flex cursor-pointer items-center justify-between gap-3 rounded-lg p-3 transition-all',
-                          'hover:bg-accent hover:text-accent-foreground',
+                          'flex items-center justify-between gap-3 rounded-lg p-3 transition-all',
+                          status !== 'self' && 'hover:bg-accent hover:text-accent-foreground',
                           'group'
                         )}
                       >
@@ -203,23 +303,11 @@ export function AddFriendDialog({ onOpenChange, open }: AddFriendDialogProps) {
                         </div>
                         <Button
                           size='sm'
-                          variant={isInvited ? 'secondary' : 'default'}
-                          onClick={() => handleAddFriend(user.id, user.name)}
+                          variant={getButtonVariant()}
+                          onClick={handleClick}
                           disabled={isDisabled}
                         >
-                          {isPendingForThisUser ? (
-                            <>
-                              {FRIENDS_STRINGS.ADDING}
-                              <Loader2 className='ml-2 h-4 w-4 animate-spin' />
-                            </>
-                          ) : isInvited ? (
-                            FRIENDS_STRINGS.INVITED
-                          ) : (
-                            <>
-                              {FRIENDS_STRINGS.ADD_FRIEND}
-                              <UserPlus className='ml-2 h-4 w-4' />
-                            </>
-                          )}
+                          {renderButtonContent()}
                         </Button>
                       </div>
                     )

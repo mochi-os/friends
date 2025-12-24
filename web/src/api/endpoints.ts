@@ -11,7 +11,7 @@ const endpoints = {
     search: '/people/-/users/search',
   },
   groups: {
-    list: '/people/-/groups',
+    list: '/people/-/groups/list',
     get: '/people/-/groups/get',
     create: '/people/-/groups/create',
     update: '/people/-/groups/update',

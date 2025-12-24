@@ -240,7 +240,14 @@ paths:
         **Features:**
         - Searches for entities with class "person"
         - Returns deduplicated results (each person appears only once)
-        - Does not include detailed entity information
+        - Includes relationship status for each result to help UI show appropriate actions
+        
+        **Relationship Status:**
+        - `friend`: Already friends with this person
+        - `invited`: You have sent an invitation to this person (waiting for their response)
+        - `pending`: This person has sent you an invitation (you can accept)
+        - `self`: This is your own profile
+        - `none`: No existing relationship (can send new invitation)
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -258,7 +265,7 @@ paths:
                   example: "john"
       responses:
         "200":
-          description: Search results with deduplicated people
+          description: Search results with deduplicated people and relationship status
           content:
             application/json:
               schema:
@@ -277,6 +284,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
 
 components:
   securitySchemes:
@@ -404,3 +412,14 @@ components:
           type: string
           description: "Entity class"
           example: "person"
+        relationshipStatus:
+          type: string
+          enum: [friend, invited, pending, self, none]
+          description: |
+            Current relationship status with this person:
+            - `friend`: Already friends
+            - `invited`: You sent them an invitation (outgoing)
+            - `pending`: They sent you an invitation (incoming)
+            - `self`: This is your own profile
+            - `none`: No existing relationship
+          example: "none"

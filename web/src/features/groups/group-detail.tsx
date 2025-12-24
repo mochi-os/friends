@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams } from '@tanstack/react-router'
-import { User, UsersRound, X } from 'lucide-react'
+import { User, UsersRound, X, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   useGroupQuery,
   useRemoveGroupMemberMutation,
 } from '@/hooks/useGroups'
+import { MemberDialog } from './member-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,8 @@ export function GroupDetail() {
     setGroupId(id)
     return () => setGroupId(null)
   }, [id, setGroupId])
+
+  const [addMemberDialog, setAddMemberDialog] = useState(false)
 
   const [removeMemberDialog, setRemoveMemberDialog] = useState<{
     open: boolean
@@ -94,11 +97,17 @@ export function GroupDetail() {
 
   return (
     <Main>
-      <div className='mb-6'>
-        <h1 className='text-2xl font-bold tracking-tight'>{group.name}</h1>
-        {group.description && (
-          <p className='text-muted-foreground mt-1'>{group.description}</p>
-        )}
+      <div className='mb-6 flex items-center justify-between'>
+        <div>
+          <h1 className='text-2xl font-bold tracking-tight'>{group.name}</h1>
+          {group.description && (
+            <p className='text-muted-foreground mt-1'>{group.description}</p>
+          )}
+        </div>
+        <Button onClick={() => setAddMemberDialog(true)}>
+          <UserPlus className='mr-2 h-4 w-4' />
+          Add Member
+        </Button>
       </div>
 
       <h2 className='text-lg font-semibold mb-4'>Members ({members.length})</h2>
@@ -182,6 +191,12 @@ export function GroupDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <MemberDialog
+        open={addMemberDialog}
+        onOpenChange={setAddMemberDialog}
+        groupId={id}
+      />
     </Main>
   )
 }

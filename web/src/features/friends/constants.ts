@@ -19,6 +19,12 @@ export const FRIENDS_STRINGS = {
   ADDING: 'Adding...',
   INVITED: 'Invited',
   CLOSE: 'Close',
+  
+  // Relationship Status
+  ALREADY_FRIENDS: 'Already Friends',
+  PENDING_INVITE: 'Accept Invite',
+  INVITATION_SENT: 'Invitation Sent',
+  THATS_YOU: "That's you",
 
   // Search & Inputs
   SEARCH_FRIENDS_PLACEHOLDER: 'Search friends...',

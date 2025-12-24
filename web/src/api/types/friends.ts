@@ -63,6 +63,8 @@ export interface SearchUsersRequest {
   page?: number
 }
 
+export type RelationshipStatus = 'friend' | 'invited' | 'pending' | 'self' | 'none'
+
 export interface User {
   class: string
   created: number
@@ -73,6 +75,7 @@ export interface User {
   location: string
   name: string
   updated: number
+  relationshipStatus?: RelationshipStatus
   [key: string]: unknown
 }
 
