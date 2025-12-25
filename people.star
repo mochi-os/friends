@@ -117,13 +117,66 @@ def action_list(a):
 	}}
 
 # Search for friends to add (searches P2P directory)
+# Supports searching by name, entity ID, fingerprint (with or without hyphens), or URL
 def action_search(a):
 	identity = a.user.identity.id
 	search = a.input("search", "").strip()
-	if len(search) > 100:
+	if len(search) > 200:
 		return json_error("Search query too long")
 
-	results = mochi.directory.search("person", search, False)
+	results = []
+
+	# Check if search term is an entity ID (49-51 word characters)
+	if mochi.valid(search, "entity"):
+		entry = mochi.directory.get(search)
+		if entry and entry.get("class") == "person":
+			results.append(entry)
+
+	# Check if search term is a fingerprint (9 alphanumeric, with or without hyphens)
+	fingerprint = search.replace("-", "")
+	if mochi.valid(fingerprint, "fingerprint"):
+		all_people = mochi.directory.search("person", "", False)
+		for entry in all_people:
+			entry_fp = entry.get("fingerprint", "").replace("-", "")
+			if entry_fp == fingerprint:
+				# Avoid duplicates
+				found = False
+				for r in results:
+					if r.get("id") == entry.get("id"):
+						found = True
+						break
+				if not found:
+					results.append(entry)
+				break
+
+	# Check if search term is a URL (e.g., https://example.com/people/ENTITY_ID)
+	if search.startswith("http://") or search.startswith("https://"):
+		parts = search.rstrip("/").split("/")
+		for part in reversed(parts):
+			if mochi.valid(part, "entity"):
+				entry = mochi.directory.get(part)
+				if entry and entry.get("class") == "person":
+					# Avoid duplicates
+					found = False
+					for r in results:
+						if r.get("id") == entry.get("id"):
+							found = True
+							break
+					if not found:
+						results.append(entry)
+				break
+
+	# Also search by name
+	name_results = mochi.directory.search("person", search, False)
+	for entry in name_results:
+		# Avoid duplicates
+		found = False
+		for r in results:
+			if r.get("id") == entry.get("id"):
+				found = True
+				break
+		if not found:
+			results.append(entry)
 
 	# Build sets of existing relationships for efficient lookup
 	friend_ids = set()
@@ -175,9 +228,10 @@ def action_search(a):
 	return {"data": {"results": unique_results}}
 
 # Search for users (for group membership)
+# Supports searching by name, entity ID, fingerprint (with or without hyphens), or URL
 def action_users_search(a):
 	search = a.input("search", "").strip()
-	if len(search) > 100:
+	if len(search) > 200:
 		return json_error("Search query too long")
 	if len(search) < 1:
 		return {"data": {"results": []}}
@@ -185,6 +239,40 @@ def action_users_search(a):
 	seen = {}
 	unique_results = []
 
+	# Check if search term is an entity ID (49-51 word characters)
+	if mochi.valid(search, "entity"):
+		entry = mochi.directory.get(search)
+		if entry and entry.get("class") == "person":
+			if entry["id"] not in seen:
+				seen[entry["id"]] = True
+				unique_results.append({"id": entry["id"], "name": entry["name"]})
+
+	# Check if search term is a fingerprint (9 alphanumeric, with or without hyphens)
+	fingerprint = search.replace("-", "")
+	if mochi.valid(fingerprint, "fingerprint"):
+		all_people = mochi.directory.search("person", "", False)
+		for entry in all_people:
+			entry_fp = entry.get("fingerprint", "").replace("-", "")
+			if entry_fp == fingerprint:
+				if entry["id"] not in seen:
+					seen[entry["id"]] = True
+					unique_results.append({"id": entry["id"], "name": entry["name"]})
+				break
+
+	# Check if search term is a URL (e.g., https://example.com/people/ENTITY_ID)
+	if search.startswith("http://") or search.startswith("https://"):
+		# Extract entity ID from URL - look for the last path segment that's a valid entity
+		parts = search.rstrip("/").split("/")
+		for part in reversed(parts):
+			if mochi.valid(part, "entity"):
+				entry = mochi.directory.get(part)
+				if entry and entry.get("class") == "person":
+					if entry["id"] not in seen:
+						seen[entry["id"]] = True
+						unique_results.append({"id": entry["id"], "name": entry["name"]})
+				break
+
+	# Also search by name
 	results = mochi.directory.search("person", search, False)
 	for result in results:
 		if result["id"] not in seen:
@@ -240,16 +328,54 @@ def function_list(identity):
 	return mochi.db.rows("select * from friends where identity=? order by name, id", identity)
 
 # Service function for user search
+# Supports searching by name, entity ID, fingerprint (with or without hyphens), or URL
 def function_users_search(query):
-	if not query or len(query) > 100:
+	if not query or len(query) > 200:
 		return []
+
+	search = query.strip()
 	seen = {}
 	unique_results = []
-	results = mochi.directory.search("person", query, False)
+
+	# Check if search term is an entity ID (49-51 word characters)
+	if mochi.valid(search, "entity"):
+		entry = mochi.directory.get(search)
+		if entry and entry.get("class") == "person":
+			if entry["id"] not in seen:
+				seen[entry["id"]] = True
+				unique_results.append({"id": entry["id"], "name": entry["name"]})
+
+	# Check if search term is a fingerprint (9 alphanumeric, with or without hyphens)
+	fingerprint = search.replace("-", "")
+	if mochi.valid(fingerprint, "fingerprint"):
+		all_people = mochi.directory.search("person", "", False)
+		for entry in all_people:
+			entry_fp = entry.get("fingerprint", "").replace("-", "")
+			if entry_fp == fingerprint:
+				if entry["id"] not in seen:
+					seen[entry["id"]] = True
+					unique_results.append({"id": entry["id"], "name": entry["name"]})
+				break
+
+	# Check if search term is a URL (e.g., https://example.com/people/ENTITY_ID)
+	if search.startswith("http://") or search.startswith("https://"):
+		parts = search.rstrip("/").split("/")
+		for part in reversed(parts):
+			if mochi.valid(part, "entity"):
+				entry = mochi.directory.get(part)
+				if entry and entry.get("class") == "person":
+					if entry["id"] not in seen:
+						seen[entry["id"]] = True
+						unique_results.append({"id": entry["id"], "name": entry["name"]})
+				break
+
+	# Also search by name
+	results = mochi.directory.search("person", search, False)
 	for result in results:
 		if result["id"] not in seen:
 			seen[result["id"]] = True
 			unique_results.append({"id": result["id"], "name": result["name"]})
+
 	return unique_results
 
 # Service function for groups list
