@@ -3,12 +3,12 @@
 # Copyright Alistair Cunningham 2024-2025
 
 def database_create():
-	mochi.db.execute("create table friends ( identity text not null, id text not null, name text not null, class text not null, primary key ( identity, id ) )")
-	mochi.db.execute("create index friends_id on friends( id )")
-	mochi.db.execute("create index friends_name on friends( name )")
-	mochi.db.execute("create table invites ( identity text not null, id text not null, direction text not null, name text not null, updated integer not null, primary key ( identity, id, direction ) )")
-	mochi.db.execute("create index invites_identity_id on invites( identity, id )")
-	mochi.db.execute("create index invites_direction on invites( direction )")
+	mochi.db.execute("create table if not exists friends ( identity text not null, id text not null, name text not null, class text not null, primary key ( identity, id ) )")
+	mochi.db.execute("create index if not exists friends_id on friends( id )")
+	mochi.db.execute("create index if not exists friends_name on friends( name )")
+	mochi.db.execute("create table if not exists invites ( identity text not null, id text not null, direction text not null, name text not null, updated integer not null, primary key ( identity, id, direction ) )")
+	mochi.db.execute("create index if not exists invites_identity_id on invites( identity, id )")
+	mochi.db.execute("create index if not exists invites_direction on invites( direction )")
 
 def json_error(message, code=400):
 	return {"status": code, "error": message, "data": {}}
