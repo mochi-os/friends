@@ -7,7 +7,7 @@ import {
   useDeclineFriendInviteMutation,
   useRemoveFriendMutation,
 } from '@/hooks/useFriends'
-import { Button, Card, CardContent, Main, usePageTitle } from '@mochi/common'
+import { Button, Card, CardContent, Main, usePageTitle, getErrorMessage } from '@mochi/common'
 import { AddFriendDialog } from '@/features/friends/components/add-friend-dialog'
 
 export function Invitations() {
@@ -42,8 +42,8 @@ export function Invitations() {
             description: `You are now friends with ${friendName}.`,
           })
         },
-        onError: () => {
-          toast.error('Failed to accept invitation')
+        onError: (error) => {
+          toast.error(getErrorMessage(error, 'Failed to accept invitation'))
         },
       }
     )
@@ -58,8 +58,8 @@ export function Invitations() {
             description: `Declined invitation from ${friendName}.`,
           })
         },
-        onError: () => {
-          toast.error('Failed to decline invitation')
+        onError: (error) => {
+          toast.error(getErrorMessage(error, 'Failed to decline invitation'))
         },
       }
     )
@@ -74,8 +74,8 @@ export function Invitations() {
             description: `Cancelled invitation to ${friendName}.`,
           })
         },
-        onError: () => {
-          toast.error('Failed to cancel invitation')
+        onError: (error) => {
+          toast.error(getErrorMessage(error, 'Failed to cancel invitation'))
         },
       }
     )

@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
   usePageTitle,
+  getErrorMessage,
 } from '@mochi/common'
 import { useSidebarContext } from '@/context/sidebar-context'
 
@@ -63,8 +64,8 @@ export function GroupDetail() {
           toast.success('Member removed')
           setRemoveMemberDialog({ open: false, member: '', name: '', type: 'user' })
         },
-        onError: () => {
-          toast.error('Failed to remove member')
+        onError: (error) => {
+          toast.error(getErrorMessage(error, 'Failed to remove member'))
         },
       }
     )

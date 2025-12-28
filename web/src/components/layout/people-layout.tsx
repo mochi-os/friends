@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { AuthenticatedLayout } from '@mochi/common'
+import { AuthenticatedLayout, getErrorMessage } from '@mochi/common'
 import type { SidebarData, NavItem } from '@mochi/common'
 import { Pencil, Plus, Trash2, User, UserPlus, Users, UsersRound } from 'lucide-react'
 import { useGroupsQuery, useDeleteGroupMutation } from '@/hooks/useGroups'
@@ -52,8 +52,8 @@ function PeopleLayoutInner() {
                 // Navigate to friends page since there's no groups list
                 navigate({ to: '/' })
               },
-              onError: () => {
-                toast.error('Failed to delete group')
+              onError: (error) => {
+                toast.error(getErrorMessage(error, 'Failed to delete group'))
               },
             }
           )

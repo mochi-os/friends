@@ -13,17 +13,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@mochi/common'
-import { Button } from '@mochi/common'
-import { Input } from '@mochi/common'
-import { Label } from '@mochi/common'
-import {
+  Button,
+  Input,
+  Label,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
+  Card,
+  CardContent,
+  getErrorMessage,
 } from '@mochi/common'
-import { Card, CardContent } from '@mochi/common'
 
 interface MemberDialogProps {
   open: boolean
@@ -54,8 +54,8 @@ export function MemberDialog({ open, onOpenChange, groupId }: MemberDialogProps)
             toast.success(`Added ${selectedUser.name} to the group`)
             resetAndClose()
           },
-          onError: () => {
-            toast.error('Failed to add member')
+          onError: (error) => {
+            toast.error(getErrorMessage(error, 'Failed to add member'))
           },
         }
       )
@@ -67,8 +67,8 @@ export function MemberDialog({ open, onOpenChange, groupId }: MemberDialogProps)
             toast.success(`Added ${selectedGroup.name} to the group`)
             resetAndClose()
           },
-          onError: () => {
-            toast.error('Failed to add member')
+          onError: (error) => {
+            toast.error(getErrorMessage(error, 'Failed to add member'))
           },
         }
       )

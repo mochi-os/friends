@@ -11,11 +11,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Button,
+  Input,
+  Label,
+  Textarea,
+  getErrorMessage,
 } from '@mochi/common'
-import { Button } from '@mochi/common'
-import { Input } from '@mochi/common'
-import { Label } from '@mochi/common'
-import { Textarea } from '@mochi/common'
 import type { Group } from '@/api/types/groups'
 
 interface GroupDialogProps {
@@ -60,8 +61,8 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
             toast.success('Group updated')
             onOpenChange(false)
           },
-          onError: () => {
-            toast.error('Failed to update group')
+          onError: (error) => {
+            toast.error(getErrorMessage(error, 'Failed to update group'))
           },
         }
       )
@@ -73,8 +74,8 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
             toast.success('Group created')
             onOpenChange(false)
           },
-          onError: () => {
-            toast.error('Failed to create group')
+          onError: (error) => {
+            toast.error(getErrorMessage(error, 'Failed to create group'))
           },
         }
       )
