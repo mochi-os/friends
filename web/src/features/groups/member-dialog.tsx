@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { User, UsersRound, Search } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@mochi/common'
 import {
   useAddGroupMemberMutation,
   useGroupsQuery,
@@ -171,7 +171,7 @@ export function MemberDialog({ open, onOpenChange, groupId }: MemberDialogProps)
 
           <TabsContent value='group' className='mt-4'>
             <div className='space-y-4'>
-              <Label>Select Group</Label>
+              <Label>Select group</Label>
               {availableGroups.length === 0 ? (
                 <p className='text-muted-foreground text-center text-sm'>
                   No other groups available
@@ -219,7 +219,7 @@ export function MemberDialog({ open, onOpenChange, groupId }: MemberDialogProps)
             Cancel
           </Button>
           <Button onClick={handleAddMember} disabled={!canAdd || addMemberMutation.isPending}>
-            {addMemberMutation.isPending ? 'Adding...' : 'Add Member'}
+            {addMemberMutation.isPending ? 'Adding...' : 'Add member'}
           </Button>
         </DialogFooter>
       </DialogContent>

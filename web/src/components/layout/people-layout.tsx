@@ -6,7 +6,7 @@ import { useGroupsQuery, useDeleteGroupMutation } from '@/hooks/useGroups'
 import { SidebarProvider, useSidebarContext } from '@/context/sidebar-context'
 import { GroupDialog } from '@/features/groups/group-dialog'
 import { MemberDialog } from '@/features/groups/member-dialog'
-import { toast } from 'sonner'
+import { toast } from '@mochi/common'
 import { useNavigate } from '@tanstack/react-router'
 
 function PeopleLayoutInner() {
@@ -99,7 +99,7 @@ function PeopleLayoutInner() {
         items: [
           ...groupItems,
           {
-            title: 'Create group',
+            title: 'New group',
             icon: Plus,
             onClick: openCreateGroupDialog,
           },
