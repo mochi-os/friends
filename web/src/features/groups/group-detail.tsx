@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { User, UsersRound, X, UserPlus } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@mochi/common'
 import {
   useGroupQuery,
   useRemoveGroupMemberMutation,

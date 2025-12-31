@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { UserPlus, UserX, Send, Clock, X, Check } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@mochi/common'
 import {
   useFriendsQuery,
   useAcceptFriendInviteMutation,

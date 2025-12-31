@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, Loader2, UserPlus, UserCheck, Check, Send, Ban } from 'lucide-react'
-import { toast } from 'sonner'
-import { cn } from '@mochi/common'
+import { cn, toast } from '@mochi/common'
 import { useSearchUsersQuery, useCreateFriendMutation, useAcceptFriendInviteMutation } from '@/hooks/useFriends'
 import { Avatar, AvatarFallback, AvatarImage } from '@mochi/common'
 import { Button } from '@mochi/common'
