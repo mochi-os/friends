@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
+  Header,
   Main,
   Table,
   TableBody,
@@ -97,21 +98,23 @@ export function GroupDetail() {
   const { group, members } = data
 
   return (
-    <Main>
-      <div className='mb-6 flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-bold tracking-tight'>{group.name}</h1>
-          {group.description && (
-            <p className='text-muted-foreground mt-1'>{group.description}</p>
-          )}
+    <>
+      <Header>
+        <div className='flex w-full items-center justify-between'>
+          <div>
+            <h1 className='text-lg font-semibold'>{group.name}</h1>
+            {group.description && (
+              <p className='text-muted-foreground text-sm'>{group.description}</p>
+            )}
+          </div>
+          <Button onClick={() => setAddMemberDialog(true)}>
+            <UserPlus className='h-4 w-4' />
+            Add member
+          </Button>
         </div>
-        <Button onClick={() => setAddMemberDialog(true)}>
-          <UserPlus className='mr-2 h-4 w-4' />
-          Add Member
-        </Button>
-      </div>
-
-      <h2 className='text-lg font-semibold mb-4'>Members ({members.length})</h2>
+      </Header>
+      <Main>
+        <h2 className='text-lg font-semibold mb-4'>Members ({members.length})</h2>
 
       {members.length === 0 ? (
         <div className='text-muted-foreground rounded-md border py-8 text-center'>
@@ -198,6 +201,7 @@ export function GroupDetail() {
         onOpenChange={setAddMemberDialog}
         groupId={id}
       />
-    </Main>
+      </Main>
+    </>
   )
 }
